@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Viscosity Global — Base Oils, Refined to Flow</title>
+  <meta name="description" content="UAE-based global trader of Group I–V base oils and synthetics. Trading, logistics, quality testing and documentation — handled end to end." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="icon" type="image/svg+xml" href="assets/viscosity-mark-only-dark.svg" />
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+
+  <style>
+    /* ============================================================
+       VISCOSITY GLOBAL — v3  ·  Warm Minimalist
+       Fresh design system. No relation to v1/v2.
+       ============================================================ */
+    :root {
+      --sand:       #F4EEE3;
+      --sand-2:     #EAE1D2;
+      --clay:       #2B2520;
+      --clay-dim:   #6B6157;
+      --amber:      #C77D34;
+      --amber-deep: #9C5A1E;
+      --line:       rgba(43, 37, 32, 0.12);
+      --ff-display: "Fraunces", Georgia, serif;
+      --ff-body:    "Manrope", system-ui, sans-serif;
+      --pad:        clamp(1.25rem, 5vw, 5rem);
+      --radius:     24px;
+      --shadow:     0 24px 60px -28px rgba(43, 37, 32, 0.45),
+                    0 8px 24px -16px rgba(156, 90, 30, 0.25);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html.lenis, html.lenis body { height: auto; }
+    .lenis.lenis-smooth { scroll-behavior: auto !important; }
+
+    body {
+      background: var(--sand);
+      color: var(--clay);
+      font-family: var(--ff-body);
+      font-weight: 400;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    ::selection { background: var(--amber); color: var(--sand); }
+
+    a { color: inherit; text-decoration: none; }
+    em { font-style: italic; color: var(--amber-deep); }
+
+    .eyebrow {
+      font-family: var(--ff-body);
+      font-weight: 600;
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--amber-deep);
+    }
+
+    .wrap { padding-left: var(--pad); padding-right: var(--pad); }
+
+    /* ============ GRAIN (subtle warm paper) ============ */
+    .grain {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      opacity: 0.035; mix-blend-mode: multiply;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* ============ HEADER ============ */
+    .hdr {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.5rem var(--pad);
+      transition: padding 0.4s ease, background 0.4s ease, box-shadow 0.4s ease;
+    }
+    .hdr.is-stuck {
+      padding: 0.85rem var(--pad);
+      background: rgba(244, 238, 227, 0.82);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 1px 0 var(--line);
+    }
+    .hdr__logo img { height: 38px; display: block; }
+    .hdr__nav { display: flex; align-items: center; gap: 2.2rem; }
+    .hdr__nav a.link {
+      font-size: 0.82rem; font-weight: 500; color: var(--clay-dim);
+      transition: color 0.3s;
+    }
+    .hdr__nav a.link:hover { color: var(--clay); }
+
+    .pill {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      font-weight: 600; font-size: 0.82rem;
+      padding: 0.7rem 1.4rem; border-radius: 100px;
+      background: var(--clay); color: var(--sand);
+      transition: background 0.3s, transform 0.2s;
+      will-change: transform;
+    }
+    .pill:hover { background: var(--amber-deep); }
+    .pill--amber { background: var(--amber); color: var(--sand); }
+    .pill--amber:hover { background: var(--amber-deep); }
+    .pill--lg { font-size: 0.95rem; padding: 1rem 2rem; }
+    .pill svg { transition: transform 0.3s; }
+    .pill:hover svg { transform: translateX(4px); }
+
+    /* ============ HERO ============ */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      align-items: center;
+      gap: clamp(2rem, 5vw, 5rem);
+      padding-top: 7rem;
+    }
+    .hero__title {
+      font-family: var(--ff-display);
+      font-weight: 400;
+      font-size: clamp(3rem, 8vw, 7rem);
+      line-height: 0.98;
+      letter-spacing: -0.02em;
+    }
+    .hero__title .word { display: inline-block; overflow: hidden; }
+    .hero__title .word > span { display: inline-block; will-change: transform; }
+    .hero__sub {
+      margin-top: clamp(1.5rem, 3vw, 2.2rem);
+      max-width: 30em;
+      font-size: clamp(1rem, 1.4vw, 1.18rem);
+      color: var(--clay-dim);
+    }
+    .hero__cta-row { display: flex; align-items: center; gap: 1.6rem; margin-top: 2.4rem; flex-wrap: wrap; }
+    .hero__note { font-size: 0.8rem; color: var(--clay-dim); }
+
+    /* ---- faux-3D liquid drop ---- */
+    .drop-stage { display: grid; place-items: center; perspective: 1000px; }
+    .drop {
+      position: relative;
+      width: clamp(220px, 30vw, 420px);
+      aspect-ratio: 1;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+    .drop__body {
+      position: absolute; inset: 0;
+      border-radius: 58% 42% 55% 45% / 52% 48% 52% 48%;
+      background:
+        radial-gradient(circle at 34% 28%, #F6C68A 0%, var(--amber) 32%, var(--amber-deep) 72%, #6F3D11 100%);
+      box-shadow:
+        inset -18px -22px 50px rgba(90, 48, 12, 0.55),
+        inset 22px 26px 60px rgba(255, 222, 175, 0.55),
+        var(--shadow);
+      will-change: border-radius, transform;
+    }
+    .drop__shine {
+      position: absolute;
+      top: 16%; left: 22%;
+      width: 32%; height: 24%;
+      background: radial-gradient(circle at 40% 40%, rgba(255,255,255,0.85), rgba(255,255,255,0) 70%);
+      border-radius: 50%;
+      filter: blur(2px);
+      transform: translateZ(40px);
+    }
+    .drop__ring {
+      position: absolute; inset: -8%;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      transform: translateZ(-30px);
+    }
+
+    /* ============ MARQUEE ============ */
+    .marquee {
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 1.1rem 0;
+      overflow: hidden;
+      white-space: nowrap;
+      background: var(--sand-2);
+    }
+    .marquee__track { display: inline-flex; gap: 2.6rem; will-change: transform; }
+    .marquee__track span {
+      font-family: var(--ff-display);
+      font-style: italic;
+      font-size: 1.4rem;
+      color: var(--clay);
+      opacity: 0.7;
+    }
+    .marquee__track span::after { content: "·"; margin-left: 2.6rem; color: var(--amber); }
+
+    /* ============ SECTION SCAFFOLD ============ */
+    .sec { padding-top: clamp(5rem, 12vh, 9rem); padding-bottom: clamp(5rem, 12vh, 9rem); }
+    .sec__head { display: flex; align-items: baseline; gap: 1.2rem; margin-bottom: clamp(2.5rem, 5vh, 4rem); }
+    .sec__head .num { font-family: var(--ff-display); color: var(--amber); font-size: 1.1rem; }
+    .sec-title {
+      font-family: var(--ff-display);
+      font-weight: 400;
+      font-size: clamp(2rem, 5vw, 3.8rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      max-width: 16em;
+    }
+
+    /* ============ SERVICES — horizontal pinned ============ */
+    .svc-pin { overflow: hidden; }
+    .svc-track {
+      display: flex;
+      gap: clamp(1.5rem, 3vw, 3rem);
+      padding: 0 var(--pad);
+      will-change: transform;
+    }
+    .svc-card {
+      flex: 0 0 min(78vw, 460px);
+      background: var(--sand);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: clamp(2rem, 3.5vw, 3.2rem);
+      box-shadow: var(--shadow);
+      display: flex; flex-direction: column;
+      min-height: 58vh;
+    }
+    .svc-card__num { font-family: var(--ff-display); font-size: 3rem; color: var(--amber); line-height: 1; }
+    .svc-card h3 { font-family: var(--ff-display); font-weight: 500; font-size: clamp(1.6rem, 2.6vw, 2.2rem); margin: 1.4rem 0 1rem; letter-spacing: -0.01em; }
+    .svc-card p { color: var(--clay-dim); font-size: 1rem; }
+    .svc-card .tag { margin-top: auto; padding-top: 2rem; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--amber-deep); }
+    .svc-intro { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+
+    /* ============ SPECTRUM — zig-zag ============ */
+    .grp {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(1.5rem, 4vw, 4rem);
+      align-items: center;
+      padding: clamp(2rem, 5vh, 3.5rem) 0;
+      border-top: 1px solid var(--line);
+    }
+    .grp:last-child { border-bottom: 1px solid var(--line); }
+    .grp:nth-child(even) .grp__main { order: 2; }
+    .grp__id { font-family: var(--ff-display); font-size: clamp(2.5rem, 6vw, 5rem); color: var(--amber); line-height: 1; }
+    .grp__name { font-family: var(--ff-display); font-weight: 500; font-size: clamp(1.4rem, 2.6vw, 2rem); margin: 0.6rem 0 1rem; }
+    .grp__grades { color: var(--clay-dim); font-size: 0.95rem; }
+    .grp__bar-wrap { display: flex; flex-direction: column; gap: 0.7rem; }
+    .grp__bar-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--clay-dim); }
+    .grp__bar { height: 6px; border-radius: 100px; background: var(--sand-2); overflow: hidden; }
+    .grp__bar > i {
+      display: block; height: 100%; border-radius: 100px;
+      background: linear-gradient(90deg, var(--amber), var(--amber-deep));
+      transform-origin: left; transform: scaleX(0);
+    }
+
+    /* ============ MANIFESTO (dark inversion) ============ */
+    .manifesto {
+      background: var(--clay);
+      color: var(--sand);
+      text-align: center;
+      padding: clamp(6rem, 16vh, 11rem) var(--pad);
+    }
+    .manifesto p {
+      font-family: var(--ff-display);
+      font-weight: 300;
+      font-size: clamp(1.8rem, 4.5vw, 3.6rem);
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      max-width: 18em;
+      margin: 0 auto;
+    }
+    .manifesto em { color: #F6C68A; }
+    .manifesto svg { display: block; margin: 2.5rem auto 0; }
+    .manifesto svg path { stroke: var(--amber); stroke-width: 3; fill: none; stroke-dasharray: 1; stroke-dashoffset: 1; }
+
+    /* ============ NETWORK — SVG routes ============ */
+    .net-stage { border: 1px solid var(--line); border-radius: var(--radius); background: var(--sand-2); padding: clamp(1.5rem, 4vw, 3rem); }
+    .net-stage svg { width: 100%; height: auto; display: block; }
+    .net-line { stroke: var(--amber); stroke-width: 1.5; fill: none; opacity: 0.55; stroke-dasharray: 1; stroke-dashoffset: 1; }
+    .net-node { fill: var(--clay); }
+    .net-node-ring { fill: none; stroke: var(--amber); stroke-width: 1; opacity: 0.5; }
+    .net-dot { fill: var(--amber-deep); }
+    .net-label { font-family: var(--ff-body); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; fill: var(--clay-dim); text-transform: uppercase; }
+
+    /* ============ STATS ============ */
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(1.5rem, 4vw, 3rem); }
+    .stat__num { font-family: var(--ff-display); font-weight: 400; font-size: clamp(2.5rem, 6vw, 4.5rem); color: var(--clay); line-height: 1; }
+    .stat__num .u { color: var(--amber); }
+    .stat__line { width: 40px; height: 2px; background: var(--amber); margin: 1.2rem 0 1rem; transform-origin: left; transform: scaleX(0); }
+    .stat__label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--clay-dim); }
+
+    /* ============ CONTACT ============ */
+    .contact-card {
+      background: var(--clay); color: var(--sand);
+      border-radius: clamp(28px, 4vw, 48px);
+      padding: clamp(2.5rem, 7vw, 6rem);
+      box-shadow: var(--shadow);
+      display: grid; grid-template-columns: 1.3fr 1fr; gap: clamp(2rem, 5vw, 4rem); align-items: end;
+    }
+    .contact-card h2 { font-family: var(--ff-display); font-weight: 400; font-size: clamp(2.2rem, 5.5vw, 4.5rem); line-height: 1.02; letter-spacing: -0.02em; }
+    .contact-card em { color: #F6C68A; }
+    .contact-meta { display: flex; flex-direction: column; gap: 1rem; }
+    .contact-meta a, .contact-meta span { font-size: 0.95rem; color: rgba(244,238,227,0.7); }
+    .contact-meta a:hover { color: var(--sand); }
+    .contact-card .pill--amber { align-self: start; margin-top: 1rem; }
+
+    /* ============ FOOTER ============ */
+    .ftr {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1.5rem;
+      padding: 3rem var(--pad);
+      border-top: 1px solid var(--line);
+      font-size: 0.75rem; color: var(--clay-dim);
+    }
+    .ftr img { height: 30px; }
+
+    /* ============ REVEAL DEFAULTS ============ */
+    .reveal { opacity: 0; transform: translateY(28px); }
+
+    /* ============ RESPONSIVE ============ */
+    @media (max-width: 880px) {
+      .hero { grid-template-columns: 1fr; padding-top: 8rem; gap: 3rem; }
+      .drop-stage { order: -1; }
+      .hdr__nav .link { display: none; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .grp { grid-template-columns: 1fr; gap: 1.2rem; }
+      .grp:nth-child(even) .grp__main { order: 0; }
+      .contact-card { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1; transform: none; }
+      * { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="grain"></div>
+
+  <!-- ===================== HEADER ===================== -->
+  <header class="hdr" id="hdr">
+    <a class="hdr__logo" href="#top" aria-label="Viscosity Global">
+      <img src="assets/lightLogo.svg" alt="Viscosity Global" />
+    </a>
+    <nav class="hdr__nav">
+      <a class="link" href="#services">Services</a>
+      <a class="link" href="#spectrum">Spectrum</a>
+      <a class="link" href="#network">Network</a>
+      <a class="pill" href="#contact" data-magnetic>
+        Get a Quote
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6"/></svg>
+      </a>
+    </nav>
+  </header>
+
+  <main id="top" class="wrap">
+
+    <!-- ===================== HERO ===================== -->
+    <section class="hero" id="hero">
+      <div class="hero__left">
+        <p class="eyebrow" data-fade>Fujairah, UAE — Global Base Oil Trading</p>
+        <h1 class="hero__title" id="hero-title">
+          Base oils,<br/><em>refined to flow.</em>
+        </h1>
+        <p class="hero__sub" data-fade>
+          We source, ship, and certify Group I–V base oils and synthetics across
+          40+ markets — trading, logistics, quality and documentation as one motion.
+        </p>
+        <div class="hero__cta-row" data-fade>
+          <a class="pill pill--amber pill--lg" href="#contact" data-magnetic>
+            Start a trade
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6"/></svg>
+          </a>
+          <span class="hero__note">5 API groups · 120K MT / year</span>
+        </div>
+      </div>
+
+      <div class="drop-stage">
+        <div class="drop" id="drop">
+          <div class="drop__ring"></div>
+          <div class="drop__body"></div>
+          <div class="drop__shine"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================== MARQUEE ===================== -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee__track" id="marquee">
+      <span>SN 150</span><span>SN 500</span><span>BS 150</span><span>N 70</span><span>N 600</span>
+      <span>PAO 4</span><span>PAO 6</span><span>PAO 8</span><span>GR III 4 cSt</span><span>GR III 8 cSt</span>
+      <span>Esters</span><span>Pale Oils</span><span>White Oils</span>
+    </div>
+  </div>
+
+  <!-- ===================== SERVICES (horizontal pin) ===================== -->
+  <section class="sec svc-pin" id="services">
+    <div class="svc-track" id="svc-track">
+      <div class="svc-card svc-intro">
+        <p class="eyebrow">01 — Full Service</p>
+        <h2 class="sec-title" style="margin-top:1rem;">Everything the trade demands, under one roof.</h2>
+      </div>
+      <article class="svc-card">
+        <div class="svc-card__num">01</div>
+        <h3>Trading</h3>
+        <p>Term contracts and spot positions across Group I–V. Pricing intelligence grounded in physical flows, not screen sentiment. We take title, we take risk.</p>
+        <div class="tag">Term · Spot · Structured</div>
+      </article>
+      <article class="svc-card">
+        <div class="svc-card__num">02</div>
+        <h3>Logistics</h3>
+        <p>Chartering, storage, flexitanks, ISO tanks, drumming lines. Door-to-tank delivery engineered around your blending schedule — not the carrier's.</p>
+        <div class="tag">Bulk · Flexi · ISO · Drum</div>
+      </article>
+      <article class="svc-card">
+        <div class="svc-card__num">03</div>
+        <h3>Quality &amp; Testing</h3>
+        <p>Independent inspection at load and discharge. Full slate analysis — viscosity, VI, flash, pour, sulphur, saturates — certified before transfer of title.</p>
+        <div class="tag">ASTM · IP · ISO 17025</div>
+      </article>
+      <article class="svc-card">
+        <div class="svc-card__num">04</div>
+        <h3>Documentation</h3>
+        <p>LCs, COO, COA, B/L, MSDS and customs dossiers prepared to the letter. Compliance across sanctions regimes and REACH — before the vessel sails.</p>
+        <div class="tag">LC · COA · COO · REACH</div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===================== SPECTRUM (zig-zag) ===================== -->
+  <section class="sec wrap" id="spectrum">
+    <div class="sec__head">
+      <span class="num">02</span>
+      <h2 class="sec-title reveal">The full refinement spectrum, delivered in spec.</h2>
+    </div>
+
+    <div class="grp">
+      <div class="grp__main reveal">
+        <div class="grp__id">I</div>
+        <div class="grp__name">Solvent Refined</div>
+        <div class="grp__grades">SN 70 · SN 150 · SN 500 · BS 150</div>
+      </div>
+      <div class="grp__bar-wrap reveal">
+        <span class="grp__bar-label">Refinement</span>
+        <div class="grp__bar"><i data-fill="0.35"></i></div>
+      </div>
+    </div>
+    <div class="grp">
+      <div class="grp__main reveal">
+        <div class="grp__id">II</div>
+        <div class="grp__name">Hydrotreated</div>
+        <div class="grp__grades">N 70 · N 150 · N 500 · N 600</div>
+      </div>
+      <div class="grp__bar-wrap reveal">
+        <span class="grp__bar-label">Refinement</span>
+        <div class="grp__bar"><i data-fill="0.55"></i></div>
+      </div>
+    </div>
+    <div class="grp">
+      <div class="grp__main reveal">
+        <div class="grp__id">III</div>
+        <div class="grp__name">Hydrocracked</div>
+        <div class="grp__grades">4 cSt · 6 cSt · 8 cSt</div>
+      </div>
+      <div class="grp__bar-wrap reveal">
+        <span class="grp__bar-label">Refinement</span>
+        <div class="grp__bar"><i data-fill="0.72"></i></div>
+      </div>
+    </div>
+    <div class="grp">
+      <div class="grp__main reveal">
+        <div class="grp__id">IV</div>
+        <div class="grp__name">Polyalphaolefins</div>
+        <div class="grp__grades">PAO 4 · PAO 6 · PAO 8 · PAO 40</div>
+      </div>
+      <div class="grp__bar-wrap reveal">
+        <span class="grp__bar-label">Refinement</span>
+        <div class="grp__bar"><i data-fill="0.9"></i></div>
+      </div>
+    </div>
+    <div class="grp">
+      <div class="grp__main reveal">
+        <div class="grp__id">V</div>
+        <div class="grp__name">Esters, Naphthenics &amp; Others</div>
+        <div class="grp__grades">Esters · PAG · Pale Oils · White Oils</div>
+      </div>
+      <div class="grp__bar-wrap reveal">
+        <span class="grp__bar-label">Refinement</span>
+        <div class="grp__bar"><i data-fill="1"></i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== MANIFESTO (dark) ===================== -->
+  <section class="manifesto">
+    <p>Viscosity is resistance to flow. Our entire operation exists to remove <em>every resistance</em> between refinery and receiver.</p>
+    <svg width="200" height="16" viewBox="0 0 200 16" fill="none">
+      <path d="M2 11 C 50 2, 150 2, 198 9" pathLength="1" />
+    </svg>
+  </section>
+
+  <!-- ===================== NETWORK (SVG routes) ===================== -->
+  <section class="sec wrap" id="network">
+    <div class="sec__head">
+      <span class="num">03</span>
+      <h2 class="sec-title reveal">Global reach, terminal precision.</h2>
+    </div>
+    <div class="net-stage reveal">
+      <svg id="net-svg" viewBox="0 0 1000 380" preserveAspectRatio="xMidYMid meet">
+        <!-- routes: drawn on scroll -->
+        <path class="net-line" d="M180,150 C320,60 520,60 640,130" pathLength="1" />
+        <path class="net-line" d="M180,150 C300,250 460,290 600,250" pathLength="1" />
+        <path class="net-line" d="M640,130 C760,160 820,210 880,200" pathLength="1" />
+        <path class="net-line" d="M600,250 C720,300 800,280 880,200" pathLength="1" />
+        <path class="net-line" d="M180,150 C140,230 260,320 420,310" pathLength="1" />
+
+        <!-- nodes -->
+        <g class="net-pt"><circle class="net-node-ring" cx="180" cy="150" r="12"/><circle class="net-node" cx="180" cy="150" r="4"/><text class="net-label" x="180" y="128" text-anchor="middle">Fujairah</text></g>
+        <g class="net-pt"><circle class="net-node-ring" cx="640" cy="130" r="12"/><circle class="net-node" cx="640" cy="130" r="4"/><text class="net-label" x="640" y="108" text-anchor="middle">Rotterdam</text></g>
+        <g class="net-pt"><circle class="net-node-ring" cx="600" cy="250" r="12"/><circle class="net-node" cx="600" cy="250" r="4"/><text class="net-label" x="600" y="282" text-anchor="middle">Singapore</text></g>
+        <g class="net-pt"><circle class="net-node-ring" cx="880" cy="200" r="12"/><circle class="net-node" cx="880" cy="200" r="4"/><text class="net-label" x="880" y="178" text-anchor="middle">Ulsan</text></g>
+        <g class="net-pt"><circle class="net-node-ring" cx="420" cy="310" r="12"/><circle class="net-node" cx="420" cy="310" r="4"/><text class="net-label" x="420" y="340" text-anchor="middle">Mombasa</text></g>
+
+        <!-- travelling dots -->
+        <circle class="net-dot" r="3.5" cx="180" cy="150"/>
+        <circle class="net-dot" r="3.5" cx="180" cy="150"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ===================== STATS ===================== -->
+  <section class="sec wrap">
+    <div class="stats">
+      <div class="reveal">
+        <div class="stat__num"><span data-count="5">0</span></div>
+        <div class="stat__line"></div>
+        <div class="stat__label">API Groups Traded</div>
+      </div>
+      <div class="reveal">
+        <div class="stat__num"><span data-count="40">0</span><span class="u">+</span></div>
+        <div class="stat__line"></div>
+        <div class="stat__label">Countries Served</div>
+      </div>
+      <div class="reveal">
+        <div class="stat__num"><span data-count="120">0</span><span class="u">K</span></div>
+        <div class="stat__line"></div>
+        <div class="stat__label">MT Traded Annually</div>
+      </div>
+      <div class="reveal">
+        <div class="stat__num"><span data-count="24">0</span><span class="u">/7</span></div>
+        <div class="stat__line"></div>
+        <div class="stat__label">Chartering &amp; Ops Desk</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CONTACT ===================== -->
+  <section class="sec wrap" id="contact">
+    <div class="contact-card reveal">
+      <div>
+        <p class="eyebrow" style="color:#F6C68A;">Start the flow</p>
+        <h2 style="margin-top:1rem;">Let's move your <em>molecule.</em></h2>
+      </div>
+      <div class="contact-meta">
+        <a href="mailto:trading@viscosityglobal.com">trading@viscosityglobal.com</a>
+        <a href="tel:+97140000000">+971 (0) 4 000 0000</a>
+        <span>Fujairah Free Zone · UAE</span>
+        <a class="pill pill--amber pill--lg" href="mailto:trading@viscosityglobal.com" data-magnetic>
+          Request a quote
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="ftr">
+    <img src="assets/lightLogo.svg" alt="Viscosity Global" />
+    <span>© 2026 Viscosity Global FZE — Group I–V · Synthetics · Worldwide</span>
+    <span>25.1288° N, 56.3265° E</span>
+  </footer>
+
+  <script type="module">
+    import Lenis from "https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.mjs";
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* ---------- Smooth scroll ---------- */
+    if (!reduced) {
+      const lenis = new Lenis({ lerp: 0.09, wheelMultiplier: 0.95 });
+      lenis.on("scroll", ScrollTrigger.update);
+      gsap.ticker.add((t) => lenis.raf(t * 1000));
+      gsap.ticker.lagSmoothing(0);
+    }
+
+    /* ---------- Header stuck state ---------- */
+    const hdr = document.getElementById("hdr");
+    ScrollTrigger.create({
+      start: "top -60",
+      onUpdate: (self) => hdr.classList.toggle("is-stuck", self.scroll() > 60),
+    });
+
+    /* ---------- Hero word-split reveal ---------- */
+    // Walk top-level nodes; wrap each word in .word>span, preserve <br> and <em>.
+    const heroTitle = document.getElementById("hero-title");
+    const out = [];
+    heroTitle.childNodes.forEach((node) => {
+      if (node.nodeName === "BR") { out.push("<br/>"); return; }
+      const isEm = node.nodeName === "EM";
+      const text = node.textContent.trim();
+      if (!text) return;
+      text.split(/\s+/).forEach((w) => {
+        const inner = isEm ? `<em>${w}</em>` : w;
+        out.push(`<span class="word"><span>${inner}</span></span> `);
+      });
+    });
+    heroTitle.innerHTML = out.join("");
+
+    if (!reduced) {
+      gsap.set(".hero__title .word > span", { yPercent: 110 });
+      const tl = gsap.timeline({ delay: 0.15 });
+      tl.to(".hero__title .word > span", { yPercent: 0, duration: 1.1, stagger: 0.08, ease: "power4.out" });
+      gsap.set("[data-fade]", { opacity: 0, y: 20 });
+      tl.to("[data-fade]", { opacity: 1, y: 0, duration: 0.9, stagger: 0.1, ease: "power3.out" }, "-=0.7");
+      gsap.set("#drop", { scale: 0.6, opacity: 0, rotate: -8 });
+      tl.to("#drop", { scale: 1, opacity: 1, rotate: 0, duration: 1.4, ease: "power3.out" }, "-=1.4");
+    }
+
+    /* ---------- Liquid blob: float + morph + tilt ---------- */
+    const drop = document.getElementById("drop");
+    const body = drop.querySelector(".drop__body");
+    if (!reduced) {
+      gsap.to(drop, { y: -18, duration: 3.2, ease: "sine.inOut", yoyo: true, repeat: -1 });
+      gsap.to(body, {
+        borderRadius: "45% 55% 48% 52% / 55% 45% 55% 45%",
+        duration: 5, ease: "sine.inOut", yoyo: true, repeat: -1,
+      });
+      gsap.to(body, { rotate: 8, duration: 8, ease: "sine.inOut", yoyo: true, repeat: -1 });
+
+      const stage = drop.parentElement;
+      stage.addEventListener("pointermove", (e) => {
+        const r = stage.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        gsap.to(drop, { rotateY: px * 22, rotateX: -py * 22, duration: 0.6, ease: "power2.out" });
+      });
+      stage.addEventListener("pointerleave", () =>
+        gsap.to(drop, { rotateY: 0, rotateX: 0, duration: 0.8, ease: "power2.out" }));
+    }
+
+    /* ---------- Marquee seamless loop ---------- */
+    const track = document.getElementById("marquee");
+    track.innerHTML += track.innerHTML; // duplicate for seamless wrap
+    if (!reduced) {
+      gsap.to(track, { xPercent: -50, duration: 28, ease: "none", repeat: -1 });
+    }
+
+    /* ---------- Services horizontal pin ---------- */
+    const svcTrack = document.getElementById("svc-track");
+    const pin = document.querySelector(".svc-pin");
+    if (!reduced && window.innerWidth > 880) {
+      const dist = () => svcTrack.scrollWidth - window.innerWidth + 80;
+      gsap.to(svcTrack, {
+        x: () => -dist(),
+        ease: "none",
+        scrollTrigger: {
+          trigger: pin,
+          start: "top top",
+          end: () => "+=" + dist(),
+          pin: true,
+          scrub: 1,
+          invalidateOnRefresh: true,
+        },
+      });
+    }
+
+    /* ---------- Generic reveals ---------- */
+    gsap.utils.toArray(".reveal").forEach((el) => {
+      gsap.to(el, {
+        opacity: 1, y: 0, duration: 1, ease: "power3.out",
+        scrollTrigger: { trigger: el, start: "top 85%" },
+      });
+    });
+
+    /* ---------- Spectrum fill bars ---------- */
+    gsap.utils.toArray(".grp__bar > i").forEach((bar) => {
+      gsap.to(bar, {
+        scaleX: parseFloat(bar.dataset.fill), duration: 1.3, ease: "power3.out",
+        scrollTrigger: { trigger: bar, start: "top 90%" },
+      });
+    });
+
+    /* ---------- Stat lines + count-ups ---------- */
+    gsap.utils.toArray(".stat__line").forEach((line) => {
+      gsap.to(line, { scaleX: 1, duration: 0.9, ease: "power3.out",
+        scrollTrigger: { trigger: line, start: "top 90%" } });
+    });
+    gsap.utils.toArray("[data-count]").forEach((el) => {
+      const end = +el.dataset.count;
+      const obj = { v: 0 };
+      gsap.to(obj, {
+        v: end, duration: 1.8, ease: "power2.out", snap: { v: 1 },
+        scrollTrigger: { trigger: el, start: "top 90%" },
+        onUpdate: () => (el.textContent = Math.round(obj.v)),
+      });
+    });
+
+    /* ---------- Manifesto underline draw ---------- */
+    gsap.to(".manifesto svg path", {
+      strokeDashoffset: 0, duration: 1.4, ease: "power2.inOut",
+      scrollTrigger: { trigger: ".manifesto", start: "top 60%" },
+    });
+
+    /* ---------- Network route draw + travelling dots ---------- */
+    gsap.utils.toArray(".net-line").forEach((p) => {
+      gsap.fromTo(p, { strokeDashoffset: 1 }, {
+        strokeDashoffset: 0, duration: 1.6, ease: "power2.inOut",
+        scrollTrigger: { trigger: "#net-svg", start: "top 75%" },
+      });
+    });
+    if (!reduced) {
+      const route = document.querySelector(".net-line");
+      const len = route.getTotalLength();
+      const dots = document.querySelectorAll(".net-dot");
+      dots.forEach((dot, i) => {
+        const o = { t: i * 0.5 };
+        gsap.to(o, {
+          t: 1, duration: 4, ease: "none", repeat: -1, delay: i * 1.4,
+          onUpdate: () => {
+            const pt = route.getPointAtLength((o.t % 1) * len);
+            dot.setAttribute("cx", pt.x);
+            dot.setAttribute("cy", pt.y);
+          },
+        });
+      });
+    }
+
+    /* ---------- Magnetic buttons ---------- */
+    if (!reduced) {
+      document.querySelectorAll("[data-magnetic]").forEach((btn) => {
+        btn.addEventListener("pointermove", (e) => {
+          const r = btn.getBoundingClientRect();
+          gsap.to(btn, {
+            x: (e.clientX - r.left - r.width / 2) * 0.35,
+            y: (e.clientY - r.top - r.height / 2) * 0.45,
+            duration: 0.4, ease: "power2.out",
+          });
+        });
+        btn.addEventListener("pointerleave", () =>
+          gsap.to(btn, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1,0.4)" }));
+      });
+    }
+
+    window.addEventListener("load", () => ScrollTrigger.refresh());
+  </script>
+</body>
+</html>

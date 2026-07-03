@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Viscosity Global — Fluid in Motion</title>
+  <meta name="description" content="UAE-based global trader of Group I–V base oils and synthetics — in continuous motion." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Spline+Sans+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <link rel="icon" type="image/svg+xml" href="assets/viscosity-mark-only-light.svg" />
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <style>
+    /* ============================================================
+       VISCOSITY GLOBAL — v4  ·  Scroll-driven GPGPU curl-noise fluid
+       Fresh, self-contained. No relation to v1/v2/v3.
+       ============================================================ */
+    :root {
+      --bg:    #05060A;
+      --ink:   #EAF0FF;
+      --dim:   rgba(234, 240, 255, 0.55);
+      --faint: rgba(234, 240, 255, 0.28);
+      --hot:   #FF7A3D;
+      --ff-disp: "Syne", system-ui, sans-serif;
+      --ff-mono: "Spline Sans Mono", ui-monospace, monospace;
+      --pad: clamp(1.25rem, 5vw, 5rem);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html.lenis, html.lenis body { height: auto; }
+    .lenis.lenis-smooth { scroll-behavior: auto !important; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--ff-mono);
+      font-weight: 300;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    ::selection { background: var(--hot); color: var(--bg); }
+
+    a { color: inherit; text-decoration: none; }
+    em { font-style: normal; color: var(--hot); }
+
+    .mono { font-family: var(--ff-mono); letter-spacing: 0.06em; }
+    .label {
+      font-family: var(--ff-mono);
+      font-size: 0.7rem; font-weight: 400;
+      letter-spacing: 0.28em; text-transform: uppercase;
+      color: var(--hot);
+    }
+
+    /* ---- fixed full-screen canvas ---- */
+    #gl { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; display: block; }
+
+    /* soft vignette so text stays legible over the fluid */
+    .vignette {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background:
+        radial-gradient(130% 90% at 50% 50%, transparent 38%, rgba(5,6,10,0.55) 100%),
+        linear-gradient(180deg, rgba(5,6,10,0.6) 0%, transparent 18%, transparent 80%, rgba(5,6,10,0.7) 100%);
+    }
+
+    /* ---- header ---- */
+    .hdr {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 30;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.4rem var(--pad);
+      mix-blend-mode: difference;
+    }
+    .hdr img { height: 34px; display: block; }
+    .hdr .meta { font-size: 0.66rem; letter-spacing: 0.2em; color: #fff; text-transform: uppercase; }
+
+    /* ---- progress rail ---- */
+    .rail {
+      position: fixed; top: 50%; right: clamp(0.8rem, 2vw, 1.8rem);
+      transform: translateY(-50%); z-index: 30;
+      display: flex; flex-direction: column; gap: 0.9rem; align-items: center;
+    }
+    .rail .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--faint); transition: background .4s, transform .4s; }
+    .rail .dot.on { background: var(--hot); transform: scale(1.6); }
+
+    /* ---- content sections ---- */
+    main { position: relative; z-index: 10; }
+    .panel {
+      min-height: 100vh;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 8rem var(--pad);
+      max-width: 1500px; margin: 0 auto;
+    }
+    .panel--center { align-items: center; text-align: center; }
+    .panel--right { align-items: flex-end; text-align: right; }
+
+    .kicker { margin-bottom: 1.6rem; }
+
+    h1, h2 {
+      font-family: var(--ff-disp);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 0.98;
+    }
+    h1 { font-size: clamp(3rem, 11vw, 10rem); }
+    h2 { font-size: clamp(2.2rem, 7vw, 6rem); }
+    .lead {
+      margin-top: 1.8rem; max-width: 30em;
+      font-size: clamp(1rem, 1.5vw, 1.25rem);
+      line-height: 1.7; color: var(--dim);
+      text-shadow: 0 0 24px rgba(5,6,10,0.9);
+    }
+    .panel--center .lead, .panel--right .lead { margin-left: auto; margin-right: auto; }
+    .panel--right .lead { margin-right: 0; }
+
+    .scrollcue { margin-top: 3rem; font-size: 0.68rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--faint); display: flex; align-items: center; gap: 0.9rem; }
+    .scrollcue::before { content: ""; width: 48px; height: 1px; background: var(--hot); display: inline-block; animation: pulse 2.2s ease-in-out infinite; transform-origin: left; }
+    @keyframes pulse { 0%,100%{transform:scaleX(.3);opacity:.5} 50%{transform:scaleX(1);opacity:1} }
+
+    .statline { display: flex; gap: clamp(1.5rem,4vw,4rem); flex-wrap: wrap; margin-top: 2.4rem; }
+    .stat .n { font-family: var(--ff-disp); font-weight: 700; font-size: clamp(2rem,4.5vw,3.4rem); color: var(--ink); line-height: 1; }
+    .stat .n .u { color: var(--hot); }
+    .stat .t { font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); margin-top: 0.6rem; }
+
+    .cta {
+      display: inline-flex; align-items: center; gap: 0.9rem;
+      margin-top: 2.6rem; align-self: flex-start;
+      font-family: var(--ff-mono); font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--bg); background: var(--hot);
+      padding: 1rem 1.8rem; border-radius: 2px;
+      transition: transform .3s, background .3s;
+    }
+    .panel--center .cta { align-self: center; }
+    .cta:hover { transform: translateY(-3px); background: #ff8f5c; }
+    .cta svg { transition: transform .3s; }
+    .cta:hover svg { transform: translateX(5px); }
+
+    .contact-meta { margin-top: 2rem; font-size: 0.8rem; line-height: 2; color: var(--dim); }
+
+    .ftr {
+      position: relative; z-index: 10;
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+      padding: 2.5rem var(--pad);
+      font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--faint);
+      border-top: 1px solid rgba(234,240,255,0.1);
+    }
+
+    /* loader */
+    .loader { position: fixed; inset: 0; z-index: 60; background: var(--bg); display: grid; place-items: center; transition: opacity .8s ease; }
+    .loader.gone { opacity: 0; pointer-events: none; }
+    .loader .l { font-family: var(--ff-mono); font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--dim); }
+
+    @media (max-width: 880px) {
+      .rail { display: none; }
+      .panel { padding: 7rem var(--pad); }
+    }
+  </style>
+</head>
+<body>
+  <div class="loader" id="loader"><div class="l">Initialising flow…</div></div>
+
+  <canvas id="gl"></canvas>
+  <div class="vignette"></div>
+
+  <header class="hdr">
+    <img src="assets/lightLogo.svg" alt="Viscosity Global" />
+    <span class="meta">Fujairah · UAE</span>
+  </header>
+
+  <nav class="rail" id="rail" aria-hidden="true">
+    <span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+  </nav>
+
+  <main id="top">
+
+    <!-- 00 HERO -->
+    <section class="panel panel--center" data-phase="0">
+      <p class="label kicker">Group I–V Base Oils · Synthetics</p>
+      <h1>In&nbsp;motion.</h1>
+      <p class="lead">Two hundred and sixty thousand particles, flowing through a field that never repeats — the way oil actually moves through the world.</p>
+      <div class="scrollcue">Scroll to stir the flow</div>
+    </section>
+
+    <!-- 01 -->
+    <section class="panel" data-phase="1">
+      <p class="label kicker">01 — The Discipline of Flow</p>
+      <h2>We remove<br/>the <em>resistance.</em></h2>
+      <p class="lead">Viscosity is resistance to flow. Our entire operation exists to remove every resistance between refinery and receiver — heavy molecules, moved lightly.</p>
+    </section>
+
+    <!-- 02 -->
+    <section class="panel panel--right" data-phase="2">
+      <p class="label kicker">02 — Full Service</p>
+      <h2>Trading. Logistics.<br/>Quality. <em>Docs.</em></h2>
+      <p class="lead">Term and spot positions, chartering and storage, independent testing, and watertight documentation — one counterparty, zero loose ends.</p>
+    </section>
+
+    <!-- 03 -->
+    <section class="panel" data-phase="3">
+      <p class="label kicker">03 — The Network</p>
+      <h2>Global reach.<br/>Terminal <em>precision.</em></h2>
+      <div class="statline">
+        <div class="stat"><div class="n" data-count="40"><span class="v">0</span><span class="u">+</span></div><div class="t">Countries Served</div></div>
+        <div class="stat"><div class="n" data-count="120"><span class="v">0</span><span class="u">K</span></div><div class="t">MT / Year</div></div>
+        <div class="stat"><div class="n" data-count="24"><span class="v">0</span><span class="u">/7</span></div><div class="t">Ops Desk</div></div>
+      </div>
+    </section>
+
+    <!-- 04 CONTACT -->
+    <section class="panel panel--center" data-phase="4">
+      <p class="label kicker">04 — Start the Flow</p>
+      <h2>Let's move<br/>your <em>molecule.</em></h2>
+      <a class="cta" href="mailto:trading@viscosityglobal.com">
+        Request a quote
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6"/></svg>
+      </a>
+      <div class="contact-meta mono">
+        trading@viscosityglobal.com<br/>
+        +971 (0) 4 000 0000 · Fujairah Free Zone, UAE
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="ftr">
+    <span>© 2026 Viscosity Global FZE</span>
+    <span>Curl-Noise Flow Field · v4</span>
+    <span>25.1288° N, 56.3265° E</span>
+  </footer>
+
+  <script type="module">
+    import * as THREE from "three";
+    import { GPUComputationRenderer } from "three/addons/misc/GPUComputationRenderer.js";
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const loader = document.getElementById("loader");
+
+    /* ===================== SIZING ===================== */
+    const isMobile = window.innerWidth < 880;
+    let SIZE = isMobile ? 256 : 512;          // particle texture edge → SIZE² particles
+    const COUNT = SIZE * SIZE;
+
+    /* ===================== RENDERER ===================== */
+    const canvas = document.getElementById("gl");
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: "high-performance" });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x05060a, 1);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 0, 14);
+
+    /* ===================== GPGPU SIMULATION ===================== */
+    const gpu = new GPUComputationRenderer(SIZE, SIZE, renderer);
+    if (renderer.capabilities.isWebGL2 === false) gpu.setDataType(THREE.HalfFloatType);
+
+    const posTex = gpu.createTexture();
+    seedPositions(posTex);
+
+    function seedPositions(tex) {
+      const d = tex.image.data;
+      for (let i = 0; i < COUNT; i++) {
+        const k = i * 4;
+        // wide slab, biased to left/center — the emitter region
+        d[k + 0] = (Math.random() * 2 - 1) * 9.0;   // x
+        d[k + 1] = (Math.random() * 2 - 1) * 6.0;   // y
+        d[k + 2] = (Math.random() * 2 - 1) * 3.0;   // z
+        d[k + 3] = Math.random();                   // life seed 0..1
+      }
+    }
+
+    // ---- simulation shader: curl-noise advection + lifetime respawn ----
+    const simShader = /* glsl */`
+      uniform float uTime;
+      uniform float uDt;
+      uniform float uFreq;
+      uniform float uEvolve;
+      uniform float uSpeed;
+      uniform float uFlowStrength;
+      uniform float uGravity;
+      uniform vec2  uFlowDir;
+      uniform float uLifeDrain;
+
+      // ---- Ashima simplex noise 3D ----
+      vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x,289.0);}
+      vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+      float snoise(vec3 v){
+        const vec2 C = vec2(1.0/6.0,1.0/3.0);
+        const vec4 D = vec4(0.0,0.5,1.0,2.0);
+        vec3 i  = floor(v + dot(v,C.yyy));
+        vec3 x0 = v - i + dot(i,C.xxx);
+        vec3 g = step(x0.yzx,x0.xyz);
+        vec3 l = 1.0-g;
+        vec3 i1 = min(g.xyz,l.zxy);
+        vec3 i2 = max(g.xyz,l.zxy);
+        vec3 x1 = x0-i1+1.0*C.xxx;
+        vec3 x2 = x0-i2+2.0*C.xxx;
+        vec3 x3 = x0-1.0+3.0*C.xxx;
+        i = mod(i,289.0);
+        vec4 p = permute(permute(permute(
+                  i.z+vec4(0.0,i1.z,i2.z,1.0))
+                + i.y+vec4(0.0,i1.y,i2.y,1.0))
+                + i.x+vec4(0.0,i1.x,i2.x,1.0));
+        float n_=1.0/7.0;
+        vec3 ns=n_*D.wyz-D.xzx;
+        vec4 j=p-49.0*floor(p*ns.z*ns.z);
+        vec4 x_=floor(j*ns.z);
+        vec4 y_=floor(j-7.0*x_);
+        vec4 x=x_*ns.x+ns.yyyy;
+        vec4 y=y_*ns.x+ns.yyyy;
+        vec4 h=1.0-abs(x)-abs(y);
+        vec4 b0=vec4(x.xy,y.xy);
+        vec4 b1=vec4(x.zw,y.zw);
+        vec4 s0=floor(b0)*2.0+1.0;
+        vec4 s1=floor(b1)*2.0+1.0;
+        vec4 sh=-step(h,vec4(0.0));
+        vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;
+        vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+        vec3 p0=vec3(a0.xy,h.x);
+        vec3 p1=vec3(a0.zw,h.y);
+        vec3 p2=vec3(a1.xy,h.z);
+        vec3 p3=vec3(a1.zw,h.w);
+        vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+        p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;
+        vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0);
+        m=m*m;
+        return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+      }
+
+      // curl of a noise potential field → divergence-free velocity
+      vec3 curlNoise(vec3 p){
+        const float e = 0.1;
+        vec3 dx = vec3(e,0.0,0.0);
+        vec3 dy = vec3(0.0,e,0.0);
+        vec3 dz = vec3(0.0,0.0,e);
+        float t = uTime * uEvolve;
+        vec3 p_x0=vec3(snoise(p-dx+t), snoise(p-dx+100.0+t), snoise(p-dx+200.0+t));
+        vec3 p_x1=vec3(snoise(p+dx+t), snoise(p+dx+100.0+t), snoise(p+dx+200.0+t));
+        vec3 p_y0=vec3(snoise(p-dy+t), snoise(p-dy+100.0+t), snoise(p-dy+200.0+t));
+        vec3 p_y1=vec3(snoise(p+dy+t), snoise(p+dy+100.0+t), snoise(p+dy+200.0+t));
+        vec3 p_z0=vec3(snoise(p-dz+t), snoise(p-dz+100.0+t), snoise(p-dz+200.0+t));
+        vec3 p_z1=vec3(snoise(p+dz+t), snoise(p+dz+100.0+t), snoise(p+dz+200.0+t));
+        float x = (p_y1.z - p_y0.z) - (p_z1.y - p_z0.y);
+        float y = (p_z1.x - p_z0.x) - (p_x1.z - p_x0.z);
+        float z = (p_x1.y - p_x0.y) - (p_y1.x - p_y0.x);
+        return normalize(vec3(x,y,z) + 1e-5) ;
+      }
+
+      float hash(vec2 c){ return fract(sin(dot(c,vec2(12.9898,78.233)))*43758.5453); }
+
+      void main(){
+        vec2 uv = gl_FragCoord.xy / resolution.xy;
+        vec4 data = texture2D(texturePosition, uv);
+        vec3 p = data.xyz;
+        float life = data.w;
+
+        vec3 vel = curlNoise(p * uFreq);
+        vel.xy += uFlowDir * uFlowStrength;
+        vel.y  += uGravity;
+
+        p += vel * uDt * uSpeed;
+        life -= uDt * uLifeDrain;
+
+        // respawn when dead or out of bounds
+        bool dead = life <= 0.0 || abs(p.x) > 13.0 || abs(p.y) > 9.0 || abs(p.z) > 6.0;
+        if(dead){
+          float r1 = hash(uv + uTime);
+          float r2 = hash(uv * 1.7 - uTime);
+          float r3 = hash(uv * 3.3 + uTime * 0.5);
+          p = vec3((r1*2.0-1.0)*9.0, (r2*2.0-1.0)*6.0, (r3*2.0-1.0)*3.0);
+          life = 0.4 + hash(uv*5.1)*0.6;
+        }
+        gl_FragColor = vec4(p, life);
+      }
+    `;
+
+    const posVar = gpu.addVariable("texturePosition", simShader, posTex);
+    gpu.setVariableDependencies(posVar, [posVar]);
+    Object.assign(posVar.material.uniforms, {
+      uTime:        { value: 0 },
+      uDt:          { value: 0.016 },
+      uFreq:        { value: 0.16 },
+      uEvolve:      { value: 0.05 },
+      uSpeed:       { value: 1.6 },
+      uFlowStrength:{ value: 0.15 },
+      uGravity:     { value: 0.0 },
+      uFlowDir:     { value: new THREE.Vector2(1, 0) },
+      uLifeDrain:   { value: 0.12 },
+    });
+
+    const gpuErr = gpu.init();
+    if (gpuErr !== null) console.error("GPGPU init:", gpuErr);
+
+    /* ===================== RENDER POINTS ===================== */
+    const refs = new Float32Array(COUNT * 2);
+    for (let i = 0; i < COUNT; i++) {
+      refs[i * 2 + 0] = (i % SIZE) / SIZE;
+      refs[i * 2 + 1] = Math.floor(i / SIZE) / SIZE;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(COUNT * 3), 3));
+    geo.setAttribute("reference", new THREE.BufferAttribute(refs, 2));
+
+    const renderUniforms = {
+      texturePosition: { value: null },
+      uSize:    { value: isMobile ? 1.0 : 1.3 },
+      uDpr:     { value: Math.min(window.devicePixelRatio, 2) },
+      uColA:    { value: new THREE.Color("#1FA8C9") }, // teal
+      uColB:    { value: new THREE.Color("#FF7A3D") }, // hot orange
+      uMix:     { value: 0.0 },
+      uOpacity: { value: 0.0 },
+    };
+
+    const pointsMat = new THREE.ShaderMaterial({
+      uniforms: renderUniforms,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      vertexShader: /* glsl */`
+        uniform sampler2D texturePosition;
+        uniform float uSize;
+        uniform float uDpr;
+        attribute vec2 reference;
+        varying float vLife;
+        varying float vDepth;
+        void main(){
+          vec4 data = texture2D(texturePosition, reference);
+          vec3 pos = data.xyz;
+          vLife = data.w;
+          vec4 mv = modelViewMatrix * vec4(pos, 1.0);
+          vDepth = -mv.z;
+          gl_Position = projectionMatrix * mv;
+          gl_PointSize = uSize * uDpr * (26.0 / -mv.z);
+        }
+      `,
+      fragmentShader: /* glsl */`
+        uniform vec3 uColA;
+        uniform vec3 uColB;
+        uniform float uMix;
+        uniform float uOpacity;
+        varying float vLife;
+        varying float vDepth;
+        void main(){
+          vec2 c = gl_PointCoord - 0.5;
+          float d = length(c);
+          if(d > 0.5) discard;
+          float soft = smoothstep(0.5, 0.0, d);
+          // fade in/out over life for seamless respawn
+          float lifeFade = smoothstep(0.0, 0.15, vLife) * smoothstep(1.0, 0.7, vLife);
+          vec3 col = mix(uColA, uColB, clamp(uMix + (1.0 - vLife) * 0.35, 0.0, 1.0));
+          // low per-particle alpha — additive blending of many points builds density
+          // without blowing out to white
+          float a = soft * lifeFade * uOpacity * 0.16;
+          gl_FragColor = vec4(col, a);
+        }
+      `,
+    });
+
+    const points = new THREE.Points(geo, pointsMat);
+    points.frustumCulled = false;
+    scene.add(points);
+
+    /* ===================== SCROLL CHOREOGRAPHY ===================== */
+    const sim = posVar.material.uniforms;
+
+    // phase keyframes: index = section. each defines the fluid "character"
+    const phases = [
+      { freq: 0.13, speed: 1.4, flow: [1, 0.05],  strength: 0.16, gravity: 0.0,  mix: 0.0,  size: isMobile?1.0:1.3, colA: "#1FA8C9", colB: "#7FE3FF" }, // 0 calm drift, teal
+      { freq: 0.20, speed: 1.9, flow: [0.6, 0.1], strength: 0.10, gravity: 0.0,  mix: 0.3,  size: isMobile?1.1:1.5, colA: "#2A6CF0", colB: "#9C7BFF" }, // 1 swirl, blue/violet
+      { freq: 0.34, speed: 2.6, flow: [0.2,-0.05],strength: 0.05, gravity: 0.0,  mix: 0.7,  size: isMobile?1.2:1.6, colA: "#B23BFF", colB: "#FF6BCB" }, // 2 turbulence, magenta
+      { freq: 0.22, speed: 2.2, flow: [0.05, 0.9],strength: 0.28, gravity: 0.18, mix: 0.85, size: isMobile?1.2:1.6, colA: "#FF7A3D", colB: "#FFD27A" }, // 3 rising plume, hot
+      { freq: 0.11, speed: 1.2, flow: [-0.3,-0.2],strength: 0.10, gravity: -0.04,mix: 0.5,  size: isMobile?1.0:1.3, colA: "#1FA8C9", colB: "#FF7A3D" }, // 4 settle
+    ];
+
+    const cA = new THREE.Color(), cB = new THREE.Color(), cA2 = new THREE.Color(), cB2 = new THREE.Color();
+
+    function applyPhase(t) {
+      // t in [0, phases.length-1]
+      const i = Math.min(Math.floor(t), phases.length - 2);
+      const f = t - i;
+      const a = phases[i], b = phases[i + 1];
+      const L = (x, y) => x + (y - x) * f;
+      sim.uFreq.value = L(a.freq, b.freq);
+      sim.uSpeed.value = L(a.speed, b.speed);
+      sim.uFlowStrength.value = L(a.strength, b.strength);
+      sim.uGravity.value = L(a.gravity, b.gravity);
+      sim.uFlowDir.value.set(L(a.flow[0], b.flow[0]), L(a.flow[1], b.flow[1]));
+      renderUniforms.uMix.value = L(a.mix, b.mix);
+      renderUniforms.uSize.value = L(a.size, b.size);
+      cA.set(a.colA); cB.set(b.colA); renderUniforms.uColA.value.copy(cA).lerp(cB, f);
+      cA2.set(a.colB); cB2.set(b.colB); renderUniforms.uColB.value.copy(cA2).lerp(cB2, f);
+    }
+    applyPhase(0);
+
+    const dots = [...document.querySelectorAll("#rail .dot")];
+
+    function initScroll() {
+      gsap.registerPlugin(ScrollTrigger);
+      if (!reduced) {
+        const lenis = new Lenis({ lerp: 0.08, wheelMultiplier: 0.95 });
+        lenis.on("scroll", ScrollTrigger.update);
+        gsap.ticker.add((t) => lenis.raf(t * 1000));
+        gsap.ticker.lagSmoothing(0);
+      }
+
+      const scrollState = { t: 0 };
+      ScrollTrigger.create({
+        trigger: "main",
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 1,
+        onUpdate: (self) => {
+          scrollState.t = self.progress * (phases.length - 1);
+          applyPhase(scrollState.t);
+          camera.position.z = 14 - self.progress * 3.5;
+          camera.position.y = Math.sin(self.progress * Math.PI) * 1.2;
+          const idx = Math.round(self.progress * (dots.length - 1));
+          dots.forEach((d, i) => d.classList.toggle("on", i === idx));
+        },
+      });
+
+      // count-ups
+      document.querySelectorAll("[data-count]").forEach((el) => {
+        const end = +el.dataset.count;
+        const v = el.querySelector(".v");
+        const o = { n: 0 };
+        gsap.to(o, {
+          n: end, duration: 1.6, ease: "power2.out", snap: { n: 1 },
+          scrollTrigger: { trigger: el, start: "top 85%" },
+          onUpdate: () => (v.textContent = Math.round(o.n)),
+        });
+      });
+    }
+
+    /* ===================== RENDER LOOP ===================== */
+    const clock = new THREE.Clock();
+    let visible = true;
+    document.addEventListener("visibilitychange", () => { visible = !document.hidden; });
+
+    function tick() {
+      requestAnimationFrame(tick);
+      if (!visible) return;
+      const dt = Math.min(clock.getDelta(), 0.033);
+
+      // reduced-motion: particles were settled during boot(); don't advect further
+      if (!reduced) {
+        sim.uTime.value += dt;
+        sim.uDt.value = dt;
+        gpu.compute();
+      }
+
+      renderUniforms.texturePosition.value = gpu.getCurrentRenderTarget(posVar).texture;
+      renderer.render(scene, camera);
+    }
+
+    /* ===================== ENTRANCE + BOOT ===================== */
+    function boot() {
+      initScroll();
+      tick();
+      // fade particles in, dismiss loader
+      gsap.to(renderUniforms.uOpacity, { value: 0.85, duration: 2.4, ease: "power2.out", delay: 0.2 });
+      loader.classList.add("gone");
+      if (reduced) {
+        // run a handful of compute steps so it isn't empty, then freeze
+        for (let i = 0; i < 60; i++) { sim.uTime.value += 0.016; gpu.compute(); }
+        renderUniforms.uOpacity.value = 0.85;
+      }
+    }
+
+    /* ===================== RESIZE ===================== */
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderUniforms.uDpr.value = Math.min(window.devicePixelRatio, 2);
+      ScrollTrigger.refresh();
+    });
+
+    if (gpuErr === null) {
+      boot();
+    } else {
+      loader.querySelector(".l").textContent = "WebGL float textures unavailable";
+    }
+  </script>
+</body>
+</html>

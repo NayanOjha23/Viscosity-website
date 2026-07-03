@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Viscosity Global — Base Oil Trading, Worldwide</title>
+  <meta name="description" content="UAE-based global trader of Group I–V base oils and synthetics. Trading, logistics, quality testing and documentation — handled end to end." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" type="image/svg+xml" href="assets/viscosity-mark-only-light.svg" />
+
+  <!-- ===================== V6 "AURORA" 3-STOP GRADIENT (blue → violet → cyan) ===================== -->
+  <style>
+    :root {
+      --grad: linear-gradient(135deg, #3A7BFF 0%, #8E5CFF 50%, #2BD4D4 100%);
+      --amber: #8E5CFF;          /* catch-all mid */
+      --amber-bright: #2BD4D4;   /* catch-all end */
+    }
+    em,
+    .hero__eyebrow,
+    .section-head .index,
+    .stat__num {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
+    .preloader__bar span,
+    .hero__scroll-line,
+    .group-row::before { background: var(--grad); }
+
+    .contact__cta { background: var(--grad); color: var(--ink); }
+    .contact__cta:hover { filter: brightness(1.12); background: var(--grad); transform: translateY(-3px); }
+
+    .nav__cta {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent !important;
+      border-color: rgba(124, 92, 255, 0.45);
+    }
+    .nav__cta:hover {
+      -webkit-text-fill-color: var(--ink);
+      color: var(--ink) !important;
+      background: var(--grad);
+      border-color: transparent;
+    }
+    .route:hover { background: rgba(124, 92, 255, 0.10); }
+    .card::after { background: radial-gradient(circle, rgba(43, 212, 212, 0.20), transparent 70%); }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+  </script>
+</head>
+<body>
+
+  <!-- ===================== PRELOADER ===================== -->
+  <div class="preloader" id="preloader">
+    <div class="preloader__inner">
+      <img class="preloader__mark" src="assets/viscosity-mark-only-light.svg" alt="" />
+      <div class="preloader__bar"><span id="preloader-fill"></span></div>
+      <div class="preloader__label mono" id="preloader-pct">CST&nbsp;0.00</div>
+    </div>
+  </div>
+
+  <!-- ===================== WEBGL CANVAS ===================== -->
+  <canvas id="gl"></canvas>
+  <div class="scrim"></div>
+  <div class="grain"></div>
+
+  <!-- ===================== TICKER ===================== -->
+  <div class="ticker mono" id="ticker">
+    <div class="ticker__track">
+      <span>SN&nbsp;70</span><i>·</i><span>SN&nbsp;150</span><i>·</i><span>SN&nbsp;500</span><i>·</i><span>BS&nbsp;150</span><i>·</i>
+      <span>N&nbsp;70</span><i>·</i><span>N&nbsp;150</span><i>·</i><span>N&nbsp;500</span><i>·</i><span>N&nbsp;600</span><i>·</i>
+      <span>4&nbsp;cSt&nbsp;PAO</span><i>·</i><span>6&nbsp;cSt&nbsp;PAO</span><i>·</i><span>8&nbsp;cSt&nbsp;PAO</span><i>·</i>
+      <span>GR&nbsp;III&nbsp;4&nbsp;cSt</span><i>·</i><span>GR&nbsp;III&nbsp;6&nbsp;cSt</span><i>·</i><span>GR&nbsp;III&nbsp;8&nbsp;cSt</span><i>·</i>
+      <span>RPO</span><i>·</i><span>TOFA&nbsp;ESTERS</span><i>·</i><span>NAPHTHENIC&nbsp;PALE&nbsp;OILS</span><i>·</i>
+      <span>SN&nbsp;70</span><i>·</i><span>SN&nbsp;150</span><i>·</i><span>SN&nbsp;500</span><i>·</i><span>BS&nbsp;150</span><i>·</i>
+      <span>N&nbsp;70</span><i>·</i><span>N&nbsp;150</span><i>·</i><span>N&nbsp;500</span><i>·</i><span>N&nbsp;600</span><i>·</i>
+      <span>4&nbsp;cSt&nbsp;PAO</span><i>·</i><span>6&nbsp;cSt&nbsp;PAO</span><i>·</i><span>8&nbsp;cSt&nbsp;PAO</span><i>·</i>
+      <span>GR&nbsp;III&nbsp;4&nbsp;cSt</span><i>·</i><span>GR&nbsp;III&nbsp;6&nbsp;cSt</span><i>·</i><span>GR&nbsp;III&nbsp;8&nbsp;cSt</span><i>·</i>
+      <span>RPO</span><i>·</i><span>TOFA&nbsp;ESTERS</span><i>·</i><span>NAPHTHENIC&nbsp;PALE&nbsp;OILS</span><i>·</i>
+    </div>
+  </div>
+
+  <!-- ===================== NAV ===================== -->
+  <header class="nav" id="nav">
+    <a class="nav__logo" href="#top" aria-label="Viscosity Global">
+      <img src="assets/darkLogo-v6.svg" alt="Viscosity Global" />
+    </a>
+    <nav class="nav__links mono">
+      <a href="#spectrum">PRODUCTS</a>
+      <a href="#network">NETWORK</a>
+      <a href="#services">SERVICES</a>
+      <a href="#contact" class="nav__cta">REQUEST A QUOTE</a>
+    </nav>
+  </header>
+
+  <main id="top">
+
+    <!-- ===================== 00 / HERO ===================== -->
+    <section class="hero" id="hero">
+      <div class="hero__inner">
+        <p class="hero__eyebrow mono">FUJAIRAH&nbsp;·&nbsp;UNITED ARAB EMIRATES&nbsp;&nbsp;—&nbsp;&nbsp;GLOBAL BASE OIL TRADING</p>
+        <h1 class="hero__title">
+          <span class="line"><span>We move the</span></span>
+          <span class="line"><span>molecule the world</span></span>
+          <span class="line"><span>runs <em>on.</em></span></span>
+        </h1>
+        <div class="hero__foot">
+          <p class="hero__sub glass--soft">
+            Group I–V base oils and synthetics, traded across continents —
+            with logistics, quality testing and documentation handled as one motion.
+          </p>
+          <div class="hero__scroll mono">
+            <span class="hero__scroll-line"></span>
+            SCROLL&nbsp;—&nbsp;FOLLOW THE FLOW
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 01 / THESIS + STATS ===================== -->
+    <section class="thesis" id="thesis">
+      <div class="glass section-intro">
+        <div class="section-head">
+          <span class="mono index">01</span>
+          <span class="mono label">THE DISCIPLINE OF FLOW</span>
+        </div>
+        <h2 class="thesis__text reveal-lines">
+          Viscosity is resistance to flow. Trading is the opposite —
+          the removal of every resistance between refinery and blending plant.
+          We exist to make heavy molecules move <em>lightly.</em>
+        </h2>
+      </div>
+      <div class="stats">
+        <div class="stat reveal">
+          <div class="stat__num mono"><span data-count="5">0</span></div>
+          <div class="stat__label mono">API GROUPS TRADED, I–V</div>
+        </div>
+        <div class="stat reveal">
+          <div class="stat__num mono"><span data-count="40">0</span>+</div>
+          <div class="stat__label mono">COUNTRIES SERVED</div>
+        </div>
+        <div class="stat reveal">
+          <div class="stat__num mono"><span data-count="120">0</span>K</div>
+          <div class="stat__label mono">MT TRADED ANNUALLY</div>
+        </div>
+        <div class="stat reveal">
+          <div class="stat__num mono"><span data-count="24">0</span>/7</div>
+          <div class="stat__label mono">CHARTERING &amp; OPS DESK</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 02 / REFINEMENT SPECTRUM ===================== -->
+    <section class="spectrum" id="spectrum">
+      <div class="glass section-intro">
+        <div class="section-head">
+          <span class="mono index">02</span>
+          <span class="mono label">THE REFINEMENT SPECTRUM</span>
+        </div>
+        <h2 class="section-title reveal">Five grades of stillness.</h2>
+        <p class="section-sub reveal">
+          From solvent-refined Group I to fully synthetic Group V — every stratum of the
+          spectrum, sourced from vetted refineries and delivered in specification.
+        </p>
+      </div>
+
+      <div class="groups">
+        <article class="group-row reveal" data-group="1">
+          <div class="group-row__id mono">GR&nbsp;I</div>
+          <div class="group-row__name">Solvent Refined</div>
+          <div class="group-row__specs mono">
+            <span>SAT&nbsp;&lt;90%</span><span>S&nbsp;&gt;0.03%</span><span>VI&nbsp;80–120</span>
+          </div>
+          <div class="group-row__grades mono">SN 70 · SN 150 · SN 500 · BS 150</div>
+        </article>
+        <article class="group-row reveal" data-group="2">
+          <div class="group-row__id mono">GR&nbsp;II</div>
+          <div class="group-row__name">Hydrotreated</div>
+          <div class="group-row__specs mono">
+            <span>SAT&nbsp;≥90%</span><span>S&nbsp;≤0.03%</span><span>VI&nbsp;80–120</span>
+          </div>
+          <div class="group-row__grades mono">N 70 · N 150 · N 500 · N 600</div>
+        </article>
+        <article class="group-row reveal" data-group="3">
+          <div class="group-row__id mono">GR&nbsp;III</div>
+          <div class="group-row__name">Hydrocracked</div>
+          <div class="group-row__specs mono">
+            <span>SAT&nbsp;≥90%</span><span>S&nbsp;≤0.03%</span><span>VI&nbsp;≥120</span>
+          </div>
+          <div class="group-row__grades mono">4 cSt · 6 cSt · 8 cSt</div>
+        </article>
+        <article class="group-row reveal" data-group="4">
+          <div class="group-row__id mono">GR&nbsp;IV</div>
+          <div class="group-row__name">Polyalphaolefins</div>
+          <div class="group-row__specs mono">
+            <span>FULL&nbsp;SYNTHETIC</span><span>VI&nbsp;~140</span><span>POUR&nbsp;&lt;−50°C</span>
+          </div>
+          <div class="group-row__grades mono">PAO 4 · PAO 6 · PAO 8 · PAO 40</div>
+        </article>
+        <article class="group-row reveal" data-group="5">
+          <div class="group-row__id mono">GR&nbsp;V</div>
+          <div class="group-row__name">Esters, Naphthenics &amp; Others</div>
+          <div class="group-row__specs mono">
+            <span>POLARITY&nbsp;TUNED</span><span>SOLVENCY&nbsp;HIGH</span><span>SPEC&nbsp;BY&nbsp;APPLICATION</span>
+          </div>
+          <div class="group-row__grades mono">ESTERS · PAG · PALE OILS · WHITE OILS</div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===================== 03 / GLOBAL NETWORK ===================== -->
+    <section class="network" id="network">
+      <div class="glass section-intro">
+        <div class="section-head">
+          <span class="mono index">03</span>
+          <span class="mono label">THE NETWORK</span>
+        </div>
+        <h2 class="section-title reveal">Cargo doesn't sleep.<br/>Neither do we.</h2>
+        <p class="section-sub reveal">
+          Headquartered at the mouth of the Strait of Hormuz — within reach of the
+          world's largest bunkering and storage hub — we fix tonnage in flexi,
+          ISO tank, drum and bulk parcels across every major basin.
+        </p>
+      </div>
+      <div class="routes mono">
+        <div class="route reveal"><span>FUJAIRAH</span><i>⟶</i><span>HAMRIYAH</span><em>STORAGE &amp; BREAKBULK</em></div>
+        <div class="route reveal"><span>JEBEL ALI</span><i>⟶</i><span>NHAVA SHEVA</span><em>FLEXITANK · 7 DAYS</em></div>
+        <div class="route reveal"><span>YANBU</span><i>⟶</i><span>SINGAPORE</span><em>BULK PARCEL · 12 DAYS</em></div>
+        <div class="route reveal"><span>ULSAN</span><i>⟶</i><span>ROTTERDAM</span><em>GR III CARGOES</em></div>
+        <div class="route reveal"><span>HOUSTON</span><i>⟶</i><span>SANTOS</span><em>GR II CARGOES</em></div>
+        <div class="route reveal"><span>HAMRIYAH</span><i>⟶</i><span>MOMBASA</span><em>DRUMS &amp; IBC</em></div>
+      </div>
+    </section>
+
+    <!-- ===================== 04 / SERVICES ===================== -->
+    <section class="services" id="services">
+      <div class="glass section-intro">
+        <div class="section-head">
+          <span class="mono index">04</span>
+          <span class="mono label">FULL-SERVICE STRUCTURE</span>
+        </div>
+        <h2 class="section-title reveal">One counterparty.<br/>Zero loose ends.</h2>
+      </div>
+      <div class="cards">
+        <article class="card reveal">
+          <div class="card__num mono">/01</div>
+          <h3>Trading</h3>
+          <p>Term contracts and spot positions across Group I–V. Pricing intelligence
+             grounded in physical flows, not screen sentiment. We take title, we take risk.</p>
+          <div class="card__tag mono">TERM · SPOT · STRUCTURED</div>
+        </article>
+        <article class="card reveal">
+          <div class="card__num mono">/02</div>
+          <h3>Logistics</h3>
+          <p>Chartering, storage, flexitanks, ISO tanks, drumming lines. Door-to-tank
+             delivery engineered around your blending schedule — not the carrier's.</p>
+          <div class="card__tag mono">BULK · FLEXI · ISO · DRUM</div>
+        </article>
+        <article class="card reveal">
+          <div class="card__num mono">/03</div>
+          <h3>Quality &amp; Testing</h3>
+          <p>Independent inspection at load and discharge port. Full slate analysis —
+             viscosity, VI, flash, pour, sulphur, saturates — certified before transfer of title.</p>
+          <div class="card__tag mono">ASTM · IP · ISO 17025 LABS</div>
+        </article>
+        <article class="card reveal">
+          <div class="card__num mono">/04</div>
+          <h3>Documentation</h3>
+          <p>LCs, COO, COA, B/L, MSDS and customs dossiers prepared to the letter.
+             Compliance across sanctions regimes and REACH — before the vessel sails.</p>
+          <div class="card__tag mono">LC · COA · COO · REACH</div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===================== 05 / CONTACT ===================== -->
+    <section class="contact" id="contact">
+      <div class="section-head">
+        <span class="mono index">05</span>
+        <span class="mono label">START THE FLOW</span>
+      </div>
+      <h2 class="contact__title">
+        <span class="line"><span>Tell us the grade,</span></span>
+        <span class="line"><span>the port, the month.</span></span>
+        <span class="line"><span><em>We'll handle the rest.</em></span></span>
+      </h2>
+      <div class="contact__row">
+        <a class="contact__cta" href="mailto:trading@viscosityglobal.com">
+          <span>REQUEST A QUOTE</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.5"/></svg>
+        </a>
+        <div class="contact__meta mono glass--soft">
+          <p>TRADING@VISCOSITYGLOBAL.COM</p>
+          <p>+971 (0) 4 000 0000</p>
+          <p>FUJAIRAH FREE ZONE · UAE</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== FOOTER ===================== -->
+    <footer class="footer">
+      <img class="footer__logo" src="assets/darkLogo-v6.svg" alt="Viscosity Global" />
+      <div class="footer__cols mono">
+        <span>© 2026 VISCOSITY GLOBAL FZE</span>
+        <span>GROUP I — V · SYNTHETICS · WORLDWIDE</span>
+        <span>25.1288° N, 56.3265° E</span>
+      </div>
+    </footer>
+
+  </main>
+
+  <script type="module" src="js/main-v6.js"></script>
+</body>
+</html>

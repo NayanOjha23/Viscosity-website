@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Viscosity Global — Design Variants</title>
+  <meta name="description" content="Homepage design variants for Viscosity Global — base oil trading." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" type="image/svg+xml" href="assets/viscosity-mark-only-light.svg" />
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+  </script>
+
+  <!-- ===================== MASTER / SELECTOR STYLES ===================== -->
+  <style>
+    .master-hero {
+      min-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 7rem;
+    }
+    .master-hero__title {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: clamp(2.6rem, 7vw, 6rem);
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+      max-width: 14em;
+    }
+    .master-hero__sub {
+      margin-top: 1.6rem;
+      max-width: 36em;
+      font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+      line-height: 1.7;
+      color: rgba(232, 239, 248, 0.72);
+      text-shadow: 0 0 14px rgba(6, 8, 13, 0.8);
+    }
+
+    /* variant gallery */
+    .variants {
+      padding-top: clamp(2rem, 6vh, 4rem);
+      padding-bottom: clamp(6rem, 14vh, 10rem);
+    }
+    .variants__grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--hairline);
+      border: 1px solid var(--hairline);
+    }
+    .variant-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      background: rgba(6, 8, 13, 0.42);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      padding: clamp(1.8rem, 3vw, 2.8rem);
+      min-height: 16rem;
+      text-decoration: none;
+      color: var(--paper);
+      overflow: hidden;
+      transition: background 0.4s, transform 0.4s;
+    }
+    .variant-card:hover { background: rgba(232, 239, 248, 0.05); }
+    .variant-card::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 2px;
+      background: var(--amber);
+      transform: scaleY(0);
+      transform-origin: top;
+      transition: transform 0.4s;
+    }
+    .variant-card:hover::before { transform: scaleY(1); }
+    .variant-card__num { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em; color: var(--amber-bright); }
+    .variant-card__name {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: clamp(1.4rem, 2.4vw, 2rem);
+      letter-spacing: -0.01em;
+      margin: 1rem 0 0.7rem;
+    }
+    .variant-card__desc { color: var(--paper-dim); font-size: 0.9rem; line-height: 1.65; max-width: 26em; }
+    .variant-card__swatch { display: flex; gap: 0.5rem; margin-top: auto; padding-top: 1.6rem; }
+    .variant-card__swatch span { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(232,239,248,0.15); }
+    .variant-card__go {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      margin-top: 1.2rem;
+      font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--amber-bright);
+    }
+    .variant-card__go svg { transition: transform 0.3s; }
+    .variant-card:hover .variant-card__go svg { transform: translateX(5px); }
+
+    @media (max-width: 980px) { .variants__grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 640px) { .variants__grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <!-- ===================== PRELOADER ===================== -->
+  <div class="preloader" id="preloader">
+    <div class="preloader__inner">
+      <img class="preloader__mark" src="assets/viscosity-mark-only-light.svg" alt="" />
+      <div class="preloader__bar"><span id="preloader-fill"></span></div>
+      <div class="preloader__label mono" id="preloader-pct">CST&nbsp;0.00</div>
+    </div>
+  </div>
+
+  <!-- ===================== WEBGL CANVAS ===================== -->
+  <canvas id="gl"></canvas>
+  <div class="scrim"></div>
+  <div class="grain"></div>
+
+  <!-- ===================== TICKER ===================== -->
+  <div class="ticker mono" id="ticker">
+    <div class="ticker__track">
+      <span>V1&nbsp;ORIGINAL</span><i>·</i><span>V2&nbsp;WARM&nbsp;GOLD</span><i>·</i><span>V3&nbsp;EDITORIAL</span><i>·</i><span>V4&nbsp;FLUID</span><i>·</i><span>COOL&nbsp;BLUE</span><i>·</i>
+      <span>V1&nbsp;ORIGINAL</span><i>·</i><span>V2&nbsp;WARM&nbsp;GOLD</span><i>·</i><span>V3&nbsp;EDITORIAL</span><i>·</i><span>V4&nbsp;FLUID</span><i>·</i><span>COOL&nbsp;BLUE</span><i>·</i>
+      <span>V1&nbsp;ORIGINAL</span><i>·</i><span>V2&nbsp;WARM&nbsp;GOLD</span><i>·</i><span>V3&nbsp;EDITORIAL</span><i>·</i><span>V4&nbsp;FLUID</span><i>·</i><span>COOL&nbsp;BLUE</span><i>·</i>
+    </div>
+  </div>
+
+  <!-- ===================== NAV ===================== -->
+  <header class="nav" id="nav">
+    <a class="nav__logo" href="#top" aria-label="Viscosity Global">
+      <img src="assets/darkLogo-v1.svg" alt="Viscosity Global" />
+    </a>
+    <nav class="nav__links mono">
+      <a href="index-v1.html">V1</a>
+      <a href="index-v2.html">V2</a>
+      <a href="index-v3.html">V3</a>
+      <a href="index-v4.html">V4</a>
+      <a href="index-v5.html">V5</a>
+      <a href="index-v6.html">V6</a>
+      <a href="index-v7.html">V7</a>
+      <a href="index-cool.html" class="nav__cta">COOL&nbsp;BLUE</a>
+    </nav>
+  </header>
+
+  <main id="top">
+
+    <!-- ===================== HERO ===================== -->
+    <section class="hero master-hero" id="hero">
+      <div class="hero__inner">
+        <p class="hero__eyebrow mono">VISCOSITY&nbsp;GLOBAL&nbsp;&nbsp;—&nbsp;&nbsp;HOMEPAGE DESIGN VARIANTS</p>
+        <h1 class="master-hero__title">
+          Five directions.<br/>One <em>molecule.</em>
+        </h1>
+        <p class="master-hero__sub glass--soft">
+          A set of homepage explorations for Viscosity Global — same brand, different
+          colour, layout and motion. Pick a direction below to view it full-screen.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===================== VARIANT GALLERY ===================== -->
+    <section class="variants" id="variants">
+      <div class="glass section-intro">
+        <div class="section-head">
+          <span class="mono index">00</span>
+          <span class="mono label">CHOOSE A DIRECTION</span>
+        </div>
+      </div>
+
+      <div class="variants__grid">
+
+        <a class="variant-card" href="index-v1.html">
+          <div class="variant-card__num">/V1</div>
+          <div class="variant-card__name">Original</div>
+          <p class="variant-card__desc">The approved base — cool dark palette, amber accent, WebGL particle fluid morphing through scroll.</p>
+          <div class="variant-card__swatch"><span style="background:#06080D"></span><span style="background:#E8EFF8"></span><span style="background:#C97A20"></span></div>
+          <span class="variant-card__go">View <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6"/></svg></span>
+        </a>
+
+        <a class="variant-card" href="index-v2.html">
+          <div class="variant-card__num">/V2</div>
+          <div class="variant-card__name">Warm Gold</div>
+          <p class="variant-card__desc">Warm obsidian base with burnished gold. Split hero, horizontal services, restructured layout.</p>
+          <div class="variant-card__swatch"><span style="background:#0D0906"></span><span style="background:#F5EDD6"></span><span style="background:#D4A853"></span></div>
+          <span class="variant-card__go">View <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6"/></svg></span>
+        </a>
+
+        <a class="variant-card" href="index-v3.html">
+          <div class="variant-card__num">/V3</div>
+          <div class="variant-card__name">Editorial</div>
+          <p class="variant-card__desc">Warm minimalist, light. Fraunces serif, liquid drop, GSAP horizontal-pin services — no WebGL.</p>
+          <div class="variant-card__swatch"><span style="background:#F4EEE3"></span><span style="background:#2B2520"></span><span style="background:#C77D34"></span></div>
+          <span class="variant-card__go">View <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6"/></svg></span>
+        </a>
+
+        <a class="variant-card" href="index-v4.html">
+          <div class="variant-card__num">/V4</div>
+          <div class="variant-card__name">Fluid</div>
+          <p class="variant-card__desc">Scroll-driven GPGPU curl-noise particle fluid — 260k particles flowing through phases of colour and motion.</p>
+          <div class="variant-card__swatch"><span style="background:#05060A"></span><span style="background:#1FA8C9"></span><span style="background:#FF7A3D"></span></div>
+          <span class="variant-card__go">View <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6"/></svg></span>
+        </a>
+
+        <a class="variant-card" href="index-v5.html">
+          <div class="variant-card__num">/V5</div>
+          <div class="variant-card__name">Petrol</div>
+          <p class="variant-card__desc">V1's layout with a teal→gold gradient identity — the particle field and every UI accent flow across two colours.</p>
+          <div class="variant-card__swatch"><span style="background:#06080D"></span><span style="background:#1FB6A6"></span><span style="background:#E0A93B"></span></div>
+          <span class="variant-card__go">View <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6"/></svg></span>
+        </a>
+
+        <a class="variant-card" href="index-v6.html">
+          <div class="variant-card__num">/V6</div>
+          <div class="variant-card__name">Aurora</div>
+          <p class="variant-card__desc">A 3-stop gradient — blue → violet → cyan — flowing across the particle field and every UI accent. Cool, electric.</p>
+          <div class="variant-card__swatch"><span style="background:#3A7BFF"></span><span style="background:#8E5CFF"></span><span style="background:#2BD4D4"></span></div>
+          <span class="variant-card__go">View <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6"/></svg></span>
+        </a>
+
+        <a class="variant-card" href="index-v7.html">
+          <div class="variant-card__num">/V7</div>
+          <div class="variant-card__name">Plasma</div>
+          <p class="variant-card__desc">A 3-stop gradient — magenta → coral → gold — hot and vivid across the particle field and UI. High-energy.</p>
+          <div class="variant-card__swatch"><span style="background:#FF3D8B"></span><span style="background:#FF6B3D"></span><span style="background:#FFD23D"></span></div>
+          <span class="variant-card__go">View <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6"/></svg></span>
+        </a>
+
+        <a class="variant-card" href="index-cool.html">
+          <div class="variant-card__num">/COOL</div>
+          <div class="variant-card__name">Cool Blue</div>
+          <p class="variant-card__desc">V1's layout re-toned with a glacier-blue accent and cool particle field — the warm-vs-cool counterpart.</p>
+          <div class="variant-card__swatch"><span style="background:#06080D"></span><span style="background:#E8EFF8"></span><span style="background:#7FB2E8"></span></div>
+          <span class="variant-card__go">View <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6"/></svg></span>
+        </a>
+
+      </div>
+    </section>
+
+    <!-- ===================== FOOTER ===================== -->
+    <footer class="footer">
+      <img class="footer__logo" src="assets/darkLogo-v1.svg" alt="Viscosity Global" />
+      <div class="footer__cols mono">
+        <span>© 2026 VISCOSITY GLOBAL FZE</span>
+        <span>HOMEPAGE DESIGN VARIANTS</span>
+        <span>25.1288° N, 56.3265° E</span>
+      </div>
+    </footer>
+
+  </main>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
