@@ -21,7 +21,7 @@ export default function Thesis() {
           <div className="stat__label mono">COUNTRIES SERVED</div>
         </div>
         <div className="stat reveal">
-          <div className="stat__num mono"><span data-count="120">0</span>K</div>
+          <div className="stat__num mono"><span data-count="75">0</span>K</div>
           <div className="stat__label mono">MT TRADED ANNUALLY</div>
         </div>
         <div className="stat reveal">

@@ -9,9 +9,21 @@ interface GradeHoverCardProps {
   visible: boolean;
   x: number;
   y: number;
+  /** When true, render as a fixed centered panel (touch) instead of cursor-follow. */
+  pinned?: boolean;
+  onClose?: () => void;
 }
 
-export default function GradeHoverCard({ name, detail, applications, visible, x, y }: GradeHoverCardProps) {
+export default function GradeHoverCard({
+  name,
+  detail,
+  applications,
+  visible,
+  x,
+  y,
+  pinned = false,
+  onClose,
+}: GradeHoverCardProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   const getTransform = useCallback(() => {
@@ -22,13 +34,25 @@ export default function GradeHoverCard({ name, detail, applications, visible, x,
   return (
     <div
       ref={ref}
-      className="grade-hover-card"
+      className={`grade-hover-card${pinned ? " grade-hover-card--pinned" : ""}`}
       style={{
-        transform: getTransform(),
+        transform: pinned ? undefined : getTransform(),
         opacity: visible ? 1 : 0,
-        pointerEvents: "none",
+        pointerEvents: pinned ? "auto" : "none",
       }}
+      role={pinned ? "dialog" : undefined}
+      aria-label={pinned ? `${name} grade detail` : undefined}
     >
+      {pinned && (
+        <button
+          type="button"
+          className="grade-hover-card__close"
+          aria-label="Close"
+          onClick={onClose}
+        >
+          ×
+        </button>
+      )}
       <div className="grade-hover-card__name">{name}</div>
       <p className="grade-hover-card__detail">{detail}</p>
       <div className="grade-hover-card__apps mono">{applications}</div>

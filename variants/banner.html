@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Viscosity Global — Banner (568×300)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+  </script>
+
+  <style>
+    :root { --ink: #06080d; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      background: #101318;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Space Grotesk", system-ui, sans-serif;
+    }
+
+    /* The exact capture frame — screenshot this element at 568×300 */
+    .banner {
+      position: relative;
+      width: 568px;
+      height: 300px;
+      overflow: hidden;
+      background:
+        radial-gradient(120% 140% at 50% 42%, #0c1018 0%, var(--ink) 62%, #04050a 100%);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+    }
+
+    .banner canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* soft aurora bloom behind the mark */
+    .banner__glow {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 340px;
+      height: 340px;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle,
+        rgba(90, 92, 255, 0.22) 0%,
+        rgba(43, 212, 212, 0.10) 34%,
+        transparent 68%);
+      pointer-events: none;
+    }
+
+    .banner__logo {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      height: auto;
+      filter: drop-shadow(0 6px 24px rgba(4, 6, 12, 0.85));
+      pointer-events: none;
+    }
+
+    /* fine grain to match the site */
+    .banner__grain {
+      position: absolute;
+      inset: 0;
+      opacity: 0.05;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* helper caption outside the capture frame */
+    .hint {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      color: rgba(232, 239, 248, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="banner" id="capture">
+    <canvas id="gl"></canvas>
+    <div class="banner__glow"></div>
+    <img class="banner__logo" src="assets/darkLogo.svg" alt="Viscosity Global" />
+    <div class="banner__grain"></div>
+  </div>
+
+  <script type="module">
+    import * as THREE from "three";
+
+    const W = 568, H = 300;
+    const canvas = document.getElementById("gl");
+    const COUNT = 22000;
+
+    // ── Globe + trade-arc geometry (State 2 from the live site) ──────────
+    const R = 5.4;
+    const latLon = (lat, lon) => {
+      const phi = (90 - lat) * (Math.PI / 180);
+      const theta = (lon + 180) * (Math.PI / 180);
+      return new THREE.Vector3(
+        -R * Math.sin(phi) * Math.cos(theta),
+        R * Math.cos(phi),
+        R * Math.sin(phi) * Math.sin(theta)
+      );
+    };
+    const ports = [
+      latLon(25.1, 56.3), latLon(25.0, 55.1), latLon(18.9, 72.8),
+      latLon(1.3, 103.8), latLon(35.5, 129.4), latLon(51.9, 4.5),
+      latLon(51.2, 4.4), latLon(29.7, -95.0), latLon(-23.9, -46.3),
+      latLon(-29.9, 31.0), latLon(-4.0, 39.6), latLon(24.1, 38.0),
+    ];
+    const arcs = [];
+    for (let p = 1; p < ports.length; p++) arcs.push([ports[0], ports[p]]);
+
+    const globe = new Float32Array(COUNT * 3);   // target globe positions
+    const start = new Float32Array(COUNT * 3);    // scattered start positions
+    const rand = new Float32Array(COUNT * 3);
+
+    const arcShare = Math.floor(COUNT * 0.18);
+    const sphereShare = COUNT - arcShare;
+    const GA = Math.PI * (3 - Math.sqrt(5));
+
+    for (let i = 0; i < sphereShare; i++) {
+      const t = i / (sphereShare - 1);
+      const y = 1 - t * 2;
+      const rr = Math.sqrt(Math.max(0, 1 - y * y));
+      const th = GA * i;
+      globe[i * 3] = Math.cos(th) * rr * R;
+      globe[i * 3 + 1] = y * R;
+      globe[i * 3 + 2] = Math.sin(th) * rr * R;
+    }
+
+    const a = new THREE.Vector3(), b = new THREE.Vector3(), v = new THREE.Vector3();
+    for (let i = 0; i < arcShare; i++) {
+      const idx = sphereShare + i;
+      const arc = arcs[i % arcs.length];
+      const t = Math.random();
+      a.copy(arc[0]).normalize();
+      b.copy(arc[1]).normalize();
+      const omega = Math.acos(THREE.MathUtils.clamp(a.dot(b), -1, 1));
+      const so = Math.sin(omega) || 1e-5;
+      v.copy(a).multiplyScalar(Math.sin((1 - t) * omega) / so)
+        .addScaledVector(b, Math.sin(t * omega) / so);
+      const lift = R + Math.sin(t * Math.PI) * 1.5;
+      globe[idx * 3] = v.x * lift;
+      globe[idx * 3 + 1] = v.y * lift;
+      globe[idx * 3 + 2] = v.z * lift;
+    }
+
+    // scattered cloud the particles morph IN from
+    for (let i = 0; i < COUNT; i++) {
+      const rx = (Math.random() - 0.5) * 34;
+      const ry = (Math.random() - 0.5) * 14;
+      const rz = (Math.random() - 0.5) * 20 - 4;
+      start[i * 3] = rx; start[i * 3 + 1] = ry; start[i * 3 + 2] = rz;
+      rand[i * 3] = Math.random();
+      rand[i * 3 + 1] = Math.random();
+      rand[i * 3 + 2] = Math.random();
+    }
+
+    // ── Renderer / scene ─────────────────────────────────────────────────
+    const renderer = new THREE.WebGLRenderer({
+      canvas, antialias: true, alpha: true, powerPreference: "high-performance",
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(W, H, false);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 120);
+    camera.position.set(0, 0, 15.5);
+
+    const uniforms = {
+      uTime:    { value: 0 },
+      uState:   { value: 0 },   // 0 = scattered, 1 = full globe
+      uSize:    { value: 6.0 },
+      uPR:      { value: Math.min(window.devicePixelRatio, 2) },
+      uOpacity: { value: 1.0 },
+      uColA:    { value: new THREE.Color("#2BD4D4") },
+      uColB:    { value: new THREE.Color("#3A7BFF") },
+      uColC:    { value: new THREE.Color("#8E5CFF") },
+    };
+
+    const material = new THREE.ShaderMaterial({
+      uniforms, transparent: true, depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      vertexShader: /* glsl */`
+        attribute vec3 aGlobe;
+        attribute vec3 aRand;
+        uniform float uTime, uState, uSize, uPR;
+        varying float vMix, vFade;
+        float ease(float t){ return t*t*(3.0-2.0*t); }
+        void main(){
+          float s = ease(clamp(uState, 0.0, 1.0));
+          vec3 p = mix(position, aGlobe, s);
+          // arc/turbulence flourish mid-morph
+          float tr = s * (1.0 - s);
+          p += (aRand - 0.5) * tr * 2.4;
+          // gentle surface shimmer on the settled globe
+          p += normalize(aGlobe) * sin(uTime*0.9 + aRand.x*6.2831) * 0.05 * s;
+          vec4 mv = modelViewMatrix * vec4(p, 1.0);
+          gl_Position = projectionMatrix * mv;
+          float twinkle = 0.75 + 0.25 * sin(uTime*2.0 + aRand.x*40.0);
+          gl_PointSize = uSize * uPR * (0.35 + 0.85*aRand.y) * twinkle * (10.0 / -mv.z);
+          vFade = smoothstep(46.0, 8.0, -mv.z);
+          vMix = aRand.z;
+        }`,
+      fragmentShader: /* glsl */`
+        uniform vec3 uColA, uColB, uColC;
+        uniform float uOpacity;
+        varying float vMix, vFade;
+        void main(){
+          float d = length(gl_PointCoord - 0.5);
+          float al = smoothstep(0.5, 0.06, d) * 0.9;
+          float t = clamp(vMix, 0.0, 1.0);
+          vec3 col = t < 0.5
+            ? mix(uColB, uColC, smoothstep(0.0, 0.5, t))
+            : mix(uColC, uColA, smoothstep(0.5, 1.0, t));
+          gl_FragColor = vec4(col, al * vFade * uOpacity);
+        }`,
+    });
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(start, 3));
+    geometry.setAttribute("aGlobe", new THREE.BufferAttribute(globe, 3));
+    geometry.setAttribute("aRand", new THREE.BufferAttribute(rand, 3));
+
+    const points = new THREE.Points(geometry, material);
+    scene.add(points);
+
+    // ── Morph on load, then idle-rotate ──────────────────────────────────
+    const clock = new THREE.Clock();
+    const MORPH = 2.8; // seconds to fully form the globe
+    function tick() {
+      const e = clock.getElapsedTime();
+      uniforms.uTime.value = e;
+      const s = Math.min(e / MORPH, 1);
+      uniforms.uState.value = s * s * (3 - 2 * s); // eased 0→1
+      points.rotation.y = e * 0.12;                // slow spin
+      points.rotation.x = -0.18;                   // slight tilt
+      renderer.render(scene, camera);
+      requestAnimationFrame(tick);
+    }
+    tick();
+  </script>
+</body>
+</html>

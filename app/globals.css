@@ -218,6 +218,65 @@ em {
   border-color: transparent;
 }
 
+/* ---- Mobile nav: hamburger + overlay panel (hidden on desktop) ---- */
+.nav__burger {
+  display: none;
+  position: relative;
+  z-index: 31;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.nav__burger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--paper);
+  transition: transform 0.3s, opacity 0.2s;
+}
+.nav__burger.is-open span:nth-child(1) { transform: translateY(4px) rotate(45deg); }
+.nav__burger.is-open span:nth-child(2) { transform: translateY(-4px) rotate(-45deg); }
+
+.nav__mobile {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6, 8, 13, 0.92);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+.nav__mobile.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.nav__mobile-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  font-size: 1rem;
+}
+.nav__mobile-links a {
+  color: var(--paper-dim);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.nav__mobile-links a:not(.nav__cta):hover { color: var(--paper); }
+.nav__mobile-links .nav__cta { padding: 0.8rem 1.6rem; }
+
 /* ============ LAYOUT GENERICS ============ */
 main { position: relative; z-index: 5; }
 
@@ -434,6 +493,42 @@ section { padding: 0 var(--pad); }
   letter-spacing: 0.08em;
   color: var(--amber);
 }
+
+/* Tap-pinned centered card (touch devices) */
+.grade-hover-card__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  background: rgba(6, 8, 13, 0.6);
+}
+.grade-hover-card--pinned {
+  position: fixed;
+  top: auto;
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
+  left: 50%;
+  right: auto;
+  width: min(92vw, 360px);
+  transform: translateX(-50%);
+  border-color: rgba(232, 239, 248, 0.18);
+}
+.grade-hover-card__close {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.7rem;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--paper-dim);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.group-row.is-active {
+  background: rgba(232, 239, 248, 0.05);
+}
+.group-row.is-active::before { transform: scaleY(1); }
 
 /* ============ NETWORK ============ */
 .network { padding-top: clamp(6rem, 16vh, 11rem); padding-bottom: clamp(6rem, 14vh, 10rem); }
@@ -1037,20 +1132,87 @@ section { padding: 0 var(--pad); }
 .contact-form__submit:hover svg { transform: translateX(4px); color: #fff; }
 
 /* ============ RESPONSIVE ============ */
+
+/* Long title/eyebrow strings wrap instead of relying on overflow-x:hidden clipping */
 @media (max-width: 900px) {
-  .stats { grid-template-columns: repeat(2, 1fr); }
-  .cards { grid-template-columns: 1fr; }
-  .routes { grid-template-columns: 1fr; }
-  .group-row {
-    grid-template-columns: 4rem 1fr;
-    grid-template-rows: auto auto;
-    row-gap: 0.6rem;
+  .hero__title,
+  .contact__title,
+  .section-title { overflow-wrap: break-word; }
+  .hero__eyebrow { white-space: normal; }
+}
+
+@media (max-width: 900px) {
+  /* Nav: smaller logo, tighter padding, honor notch safe areas */
+  .nav {
+    padding-left: max(var(--pad), env(safe-area-inset-left));
+    padding-right: max(var(--pad), env(safe-area-inset-right));
+    padding-top: 0.9rem;
+    padding-bottom: 0.9rem;
   }
-  .group-row__specs { grid-column: 2; }
-  .group-row__grades { grid-column: 1 / -1; text-align: left; }
+  .nav__logo img { height: 52px; }
+  .nav__links { display: none; }
+  .nav__burger { display: flex; }
+
+  .stats { grid-template-columns: repeat(2, 1fr); gap: 1.5rem 1rem; }
+  .cards { grid-template-columns: 1fr; }
+
+  /* Network routes (section 03): stack meta onto its own line instead of
+     cramming it against the right edge on a single no-wrap flex row */
+  .routes { grid-template-columns: 1fr; }
+  .route {
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    padding: 1.15rem 1.2rem;
+  }
+  .route em {
+    margin-left: 0;
+    flex-basis: 100%;
+    margin-top: 0.1rem;
+    color: var(--paper-dim);
+  }
+
+  /* Refinement Spectrum grades (section 02): id + name on one line,
+     specs and grades stacked full-width below — no giant column gap */
+  .group-row {
+    grid-template-columns: auto 1fr;
+    column-gap: 0.9rem;
+    row-gap: 0.5rem;
+    align-items: baseline;
+    padding-top: 1.4rem;
+    padding-bottom: 1.4rem;
+    cursor: pointer;
+  }
+  .group-row__id { grid-row: 1; grid-column: 1; }
+  .group-row__name { grid-row: 1; grid-column: 2; }
+  .group-row__specs {
+    grid-column: 1 / -1;
+    gap: 0.35rem 1rem;
+  }
+  .group-row__grades {
+    grid-column: 1 / -1;
+    text-align: left;
+    color: var(--paper-dim);
+  }
   .contact-form__row { grid-template-columns: 1fr; }
-  .nav__links a:not(.nav__cta) { display: none; }
   .product-card__header { gap: 1rem; }
   .product-card__purity-track { display: none; }
   .product-card__footer { flex-direction: column; align-items: flex-start; gap: 1rem; }
+
+  /* Hero: reclaim vertical space eaten by the fixed nav + ticker */
+  .hero { padding-top: 7rem; }
+
+  /* Contact meta reads better left-aligned once it stacks */
+  .contact__meta { text-align: left; }
+}
+
+@media (max-width: 600px) {
+  .nav__logo img { height: 44px; }
+  .hero { padding-top: 6rem; }
+  /* Footer coordinate/tagline columns stack instead of cramming at 0.62rem */
+  .footer__cols { flex-direction: column; gap: 1.4rem; }
+}
+
+@media (max-width: 420px) {
+  /* Four stats become a single clean column on the smallest phones */
+  .stats { grid-template-columns: 1fr; }
 }

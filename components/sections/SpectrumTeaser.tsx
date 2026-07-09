@@ -8,16 +8,30 @@ import { PRODUCT_GROUPS } from "@/lib/data/products";
 
 export default function SpectrumTeaser() {
   const [hover, setHover] = useState<{ idx: number; x: number; y: number } | null>(null);
+  // Touch devices have no hover; tapping a row pins the detail card centered on screen.
+  const [pinned, setPinned] = useState<number | null>(null);
 
-  const onEnter = useCallback((idx: number) => (e: React.MouseEvent) => {
+  const onEnter = useCallback((idx: number) => (e: React.PointerEvent) => {
+    if (e.pointerType === "touch") return;
     setHover({ idx, x: e.clientX, y: e.clientY });
   }, []);
 
-  const onMove = useCallback((e: React.MouseEvent) => {
+  const onMove = useCallback((e: React.PointerEvent) => {
+    if (e.pointerType === "touch") return;
     setHover((prev) => prev ? { ...prev, x: e.clientX, y: e.clientY } : null);
   }, []);
 
   const onLeave = useCallback(() => setHover(null), []);
+
+  const onTap = useCallback((idx: number) => (e: React.PointerEvent) => {
+    if (e.pointerType !== "touch") return;
+    setHover(null);
+    setPinned((prev) => (prev === idx ? null : idx));
+  }, []);
+
+  const closePinned = useCallback(() => setPinned(null), []);
+
+  const activeIdx = pinned ?? hover?.idx ?? null;
 
   return (
     <section className="spectrum" id="spectrum">
@@ -33,11 +47,12 @@ export default function SpectrumTeaser() {
         {PRODUCT_GROUPS.map((g, i) => (
           <article
             key={g.id}
-            className="group-row reveal"
+            className={`group-row reveal${pinned === i ? " is-active" : ""}`}
             data-group={g.group}
-            onMouseEnter={onEnter(i)}
-            onMouseMove={onMove}
-            onMouseLeave={onLeave}
+            onPointerEnter={onEnter(i)}
+            onPointerMove={onMove}
+            onPointerLeave={onLeave}
+            onPointerUp={onTap(i)}
           >
             <div className="group-row__id mono">{g.id.replace(" ", " ")}</div>
             <div className="group-row__name">{g.name}</div>
@@ -49,14 +64,20 @@ export default function SpectrumTeaser() {
         ))}
       </div>
 
-      {hover && (
+      {pinned !== null && (
+        <div className="grade-hover-card__scrim" onPointerUp={closePinned} />
+      )}
+
+      {activeIdx !== null && (
         <GradeHoverCard
-          name={PRODUCT_GROUPS[hover.idx].name}
-          detail={PRODUCT_GROUPS[hover.idx].detail}
-          applications={PRODUCT_GROUPS[hover.idx].applications}
+          name={PRODUCT_GROUPS[activeIdx].name}
+          detail={PRODUCT_GROUPS[activeIdx].detail}
+          applications={PRODUCT_GROUPS[activeIdx].applications}
           visible={true}
-          x={hover.x}
-          y={hover.y}
+          x={hover?.x ?? 0}
+          y={hover?.y ?? 0}
+          pinned={pinned !== null}
+          onClose={closePinned}
         />
       )}
 
