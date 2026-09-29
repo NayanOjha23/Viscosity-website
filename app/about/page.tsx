@@ -7,13 +7,13 @@ export const metadata: Metadata = {
   title: "About",
   description:
     "Viscosity Global is a UAE-based trading house specialising in physical base oil markets. Our edge is speed, precision and complete accountability across the supply chain.",
-  openGraph: { url: "https://viscosityglobal.com/about" },
+  openGraph: { url: "https://viscosityglobal.com/about/" },
 };
 
 const STATS = [
   { num: "5", label: "API GROUPS TRADED, I–V" },
   { num: "40+", label: "COUNTRIES SERVED" },
-  { num: "120K", label: "MT TRADED ANNUALLY" },
+  { num: "75K", label: "MT TRADED ANNUALLY" },
   { num: "24/7", label: "CHARTERING & OPS DESK" },
 ];
 

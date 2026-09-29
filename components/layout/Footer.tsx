@@ -7,7 +7,7 @@ export default function Footer() {
         alt="Viscosity Global"
       />
       <div className="footer__cols mono">
-        <span>© 2026 VISCOSITY GLOBAL FZE</span>
+        <span>© {new Date().getFullYear()} VISCOSITY GLOBAL FZE</span>
         <span>BASE OILS · SYNTHETICS · PETROCHEMICALS · WORLDWIDE</span>
         <span>25.1288° N, 56.3265° E</span>
       </div>

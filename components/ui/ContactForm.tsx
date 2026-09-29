@@ -49,7 +49,7 @@ export default function ContactForm() {
   }
 
   return (
-    <form className="contact-form" onSubmit={handleSubmit} noValidate>
+    <form className="contact-form" onSubmit={handleSubmit}>
 
       {/* Row 1: Name + Company */}
       <div className="contact-form__row">
@@ -150,6 +150,8 @@ export default function ContactForm() {
       <div className="contact-form__footer">
         <p className="contact-form__note">
           Submitting opens your email client with the form pre-filled.
+          No email app? Write to{" "}
+          <a href="mailto:trading@viscosityglobal.com">trading@viscosityglobal.com</a>.
           We reply within 24 hours.
         </p>
         <button type="submit" className="contact-form__submit">

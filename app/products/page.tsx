@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: "Products",
   description:
     "Viscosity Global trades Group I–V base oils, synthetic fluids and petrochemicals including PAOs, esters, naphthenics and pale oils — sourced from certified refineries worldwide.",
-  openGraph: { url: "https://viscosityglobal.com/products" },
+  openGraph: { url: "https://viscosityglobal.com/products/" },
 };
 
 const STATS = [

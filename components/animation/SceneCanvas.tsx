@@ -14,13 +14,14 @@ interface SceneCanvasProps {
 
 export default function SceneCanvas({ mode = "ambient", config }: SceneCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const configKey = JSON.stringify(config ?? {});
 
   useEffect(() => {
     if (!canvasRef.current) return;
 
     gsap.registerPlugin(ScrollTrigger);
 
-    const { renderer, scene, camera, uniforms, dispose } = createScene(canvasRef.current, config);
+    const { renderer, scene, camera, uniforms, dispose } = createScene(canvasRef.current, JSON.parse(configKey) as SceneConfig);
 
     const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
     let camY = 0;
@@ -68,7 +69,7 @@ export default function SceneCanvas({ mode = "ambient", config }: SceneCanvasPro
       choreoCleanup?.();
       dispose();
     };
-  }, [mode]);
+  }, [mode, configKey]);
 
   return <canvas ref={canvasRef} id="gl" />;
 }

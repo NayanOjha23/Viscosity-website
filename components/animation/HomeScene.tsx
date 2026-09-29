@@ -57,8 +57,9 @@ export default function HomeScene() {
     const fill = document.getElementById("preloader-fill");
     const pct = document.getElementById("preloader-pct");
 
+    let intro: gsap.core.Timeline | undefined;
+    const load = { v: 0 };
     if (pre && fill && pct) {
-      const load = { v: 0 };
       gsap.to(load, {
         v: 100,
         duration: 1.6,
@@ -68,8 +69,8 @@ export default function HomeScene() {
           pct.textContent = "CST " + (load.v * 0.46).toFixed(2);
         },
         onComplete: () => {
-          const tl = gsap.timeline();
-          tl.to(pre, { opacity: 0, duration: 0.7, ease: "power2.inOut" })
+          intro = gsap.timeline();
+          intro.to(pre, { opacity: 0, duration: 0.7, ease: "power2.inOut" })
             .set(pre, { display: "none" })
             .to(uniforms.uOpacity, { value: 1.2, duration: 2.2, ease: "power2.out" }, "-=0.5")
             .fromTo(
@@ -98,9 +99,14 @@ export default function HomeScene() {
             );
         },
       });
+    } else {
+      gsap.set("#nav, #ticker", { opacity: 1 });
     }
 
     return () => {
+      gsap.killTweensOf(load);
+      intro?.kill();
+      gsap.set("#nav, #ticker", { opacity: 1 });
       cancelAnimationFrame(rafId);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("resize", onResize);

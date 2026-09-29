@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: "Contact",
   description:
     "Request a quote for Group I–V base oils. Contact Viscosity Global in Dubai, UAE — trading@viscosityglobal.com. Firm indications within 24 hours.",
-  openGraph: { url: "https://viscosityglobal.com/contact" },
+  openGraph: { url: "https://viscosityglobal.com/contact/" },
 };
 
 const CHANNELS = [
