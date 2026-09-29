@@ -8,7 +8,7 @@ import SmoothScrollProvider from "@/components/animation/SmoothScrollProvider";
 import { organizationSchema } from "@/lib/seo/organization";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://viscosityglobal.com"),
+  metadataBase: new URL("https://viscosity.global"),
   title: {
     default: "Viscosity Global — Base Oil Trading, Worldwide",
     template: "%s | Viscosity Global",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://viscosityglobal.com/",
+    url: "https://viscosity.global/",
     siteName: "Viscosity Global",
   },
   twitter: {

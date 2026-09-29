@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: "Products",
   description:
     "Viscosity Global trades Group I–V base oils, synthetic fluids and petrochemicals including PAOs, esters, naphthenics and pale oils — sourced from certified refineries worldwide.",
-  openGraph: { url: "https://viscosityglobal.com/products/" },
+  openGraph: { url: "https://viscosity.global/products/" },
 };
 
 const STATS = [
@@ -83,15 +83,15 @@ export default function ProductsPage() {
             <span className="line"><span><em>We&apos;ll send specs.</em></span></span>
           </h2>
           <div className="contact__row">
-            <a className="contact__cta" href="mailto:trading@viscosityglobal.com">
+            <a className="contact__cta" href="mailto:admin@viscosity.global">
               <span>REQUEST SPECS</span>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                 <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1.5" />
               </svg>
             </a>
             <div className="contact__meta mono glass--soft">
-              <p>TRADING@VISCOSITYGLOBAL.COM</p>
-              <p>+971 (0) 4 000 0000</p>
+              <p>ADMIN@VISCOSITY.GLOBAL</p>
+              <p>+971 50 985 2782</p>
               <p>DUBAI · UAE</p>
             </div>
           </div>

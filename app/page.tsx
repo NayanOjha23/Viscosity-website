@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "Viscosity Global — Base Oil Trading, Worldwide",
   description:
     "UAE-based global trader of Group I–V base oils and synthetics. Trading, logistics, quality testing and documentation — handled end to end.",
-  openGraph: { url: "https://viscosityglobal.com/" },
+  openGraph: { url: "https://viscosity.global/" },
 };
 
 export default function HomePage() {

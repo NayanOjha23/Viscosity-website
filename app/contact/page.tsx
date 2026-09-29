@@ -7,8 +7,8 @@ import ContactForm from "@/components/ui/ContactForm";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Request a quote for Group I–V base oils. Contact Viscosity Global in Dubai, UAE — trading@viscosityglobal.com. Firm indications within 24 hours.",
-  openGraph: { url: "https://viscosityglobal.com/contact/" },
+    "Request a quote for Group I–V base oils. Contact Viscosity Global in Dubai, UAE — admin@viscosity.global. Firm indications within 24 hours.",
+  openGraph: { url: "https://viscosity.global/contact/" },
 };
 
 const CHANNELS = [
@@ -16,15 +16,15 @@ const CHANNELS = [
     label: "EMAIL",
     title: "Trading Desk",
     body: "For enquiries, spec requests and indicative pricing on any Group I–V grade.",
-    value: "TRADING@VISCOSITYGLOBAL.COM",
-    href: "mailto:trading@viscosityglobal.com",
+    value: "ADMIN@VISCOSITY.GLOBAL",
+    href: "mailto:admin@viscosity.global",
   },
   {
     label: "PHONE",
     title: "Operations",
     body: "Chartering, ops and urgent cargo enquiries. Manned 24/7 for active positions.",
-    value: "+971 (0) 4 000 0000",
-    href: "tel:+97140000000",
+    value: "+971 50 985 2782",
+    href: "tel:+971509852782",
   },
   {
     label: "ADDRESS",
@@ -92,15 +92,15 @@ export default function ContactPage() {
             <span className="line"><span><em>We&apos;ll handle the rest.</em></span></span>
           </h2>
           <div className="contact__row">
-            <a className="contact__cta" href="mailto:trading@viscosityglobal.com">
+            <a className="contact__cta" href="mailto:admin@viscosity.global">
               <span>REQUEST A QUOTE</span>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                 <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1.5" />
               </svg>
             </a>
             <div className="contact__meta mono glass--soft">
-              <p>TRADING@VISCOSITYGLOBAL.COM</p>
-              <p>+971 (0) 4 000 0000</p>
+              <p>ADMIN@VISCOSITY.GLOBAL</p>
+              <p>+971 50 985 2782</p>
               <p>DUBAI · UAE</p>
             </div>
           </div>

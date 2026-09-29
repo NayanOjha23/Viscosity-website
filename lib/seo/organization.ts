@@ -2,9 +2,10 @@ export const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "Viscosity Global",
-  url: "https://viscosityglobal.com/",
-  logo: "https://viscosityglobal.com/assets/darkLogo.svg",
-  email: "trading@viscosityglobal.com",
+  url: "https://viscosity.global/",
+  logo: "https://viscosity.global/assets/darkLogo.svg",
+  email: "admin@viscosity.global",
+  telephone: "+971509852782",
   address: {
     "@type": "PostalAddress",
     addressLocality: "Dubai",

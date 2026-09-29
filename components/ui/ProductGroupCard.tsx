@@ -18,7 +18,7 @@ export default function ProductGroupCard({
   applications,
 }: ProductGroupCardProps) {
   const subject = encodeURIComponent(`${id} Base Oil Enquiry — Viscosity Global`);
-  const mailto = `mailto:trading@viscosityglobal.com?subject=${subject}`;
+  const mailto = `mailto:admin@viscosity.global?subject=${subject}`;
 
   return (
     <article className="product-card reveal" data-group={group}>

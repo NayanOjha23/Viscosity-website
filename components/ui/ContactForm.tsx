@@ -45,7 +45,7 @@ export default function ContactForm() {
         fields.message,
       ].join("\n")
     );
-    window.location.href = `mailto:trading@viscosityglobal.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:admin@viscosity.global?subject=${subject}&body=${body}`;
   }
 
   return (
@@ -151,7 +151,7 @@ export default function ContactForm() {
         <p className="contact-form__note">
           Submitting opens your email client with the form pre-filled.
           No email app? Write to{" "}
-          <a href="mailto:trading@viscosityglobal.com">trading@viscosityglobal.com</a>.
+          <a href="mailto:admin@viscosity.global">admin@viscosity.global</a>.
           We reply within 24 hours.
         </p>
         <button type="submit" className="contact-form__submit">
