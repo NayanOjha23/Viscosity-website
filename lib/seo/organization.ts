@@ -5,7 +5,7 @@ export const organizationSchema = {
   url: "https://viscosity.global/",
   logo: "https://viscosity.global/assets/darkLogo.svg",
   email: "admin@viscosity.global",
-  telephone: "+971509852782",
+  telephone: "+971542859995",
   address: {
     "@type": "PostalAddress",
     addressLocality: "Dubai",

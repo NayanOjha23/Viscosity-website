@@ -225,7 +225,7 @@ export default function AboutPage() {
             </a>
             <div className="contact__meta mono glass--soft">
               <p>ADMIN@VISCOSITY.GLOBAL</p>
-              <p>+971 50 985 2782</p>
+              <p>+971 54 285 9995</p>
               <p>DUBAI · UAE</p>
             </div>
           </div>

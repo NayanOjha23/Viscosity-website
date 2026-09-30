@@ -23,8 +23,8 @@ const CHANNELS = [
     label: "PHONE",
     title: "Operations",
     body: "Chartering, ops and urgent cargo enquiries. Manned 24/7 for active positions.",
-    value: "+971 50 985 2782",
-    href: "tel:+971509852782",
+    value: "+971 54 285 9995",
+    href: "tel:+971542859995",
   },
   {
     label: "ADDRESS",
@@ -100,7 +100,7 @@ export default function ContactPage() {
             </a>
             <div className="contact__meta mono glass--soft">
               <p>ADMIN@VISCOSITY.GLOBAL</p>
-              <p>+971 50 985 2782</p>
+              <p>+971 54 285 9995</p>
               <p>DUBAI · UAE</p>
             </div>
           </div>
